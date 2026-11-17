@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Train MNIST and deploy site
 
 on:
   push:
@@ -15,13 +15,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  train:
+    runs-on: ubuntu-latest
+    container: tensorflow/tensorflow:2.20.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Train and export results
+        run: python mnist/mnist_mlp.py --min-acc 0.96 --export mnist/data
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mnist-data
+          path: mnist/data
+
   deploy:
+    needs: train
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: mnist-data
+          path: mnist/data
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

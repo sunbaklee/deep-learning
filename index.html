@@ -68,6 +68,8 @@ button.icon { width: 34px; padding: 0; }
 .side > * { width: 240px; flex: none; }
 .shell.collapsed .side { visibility: hidden; border-right-color: transparent; transition: visibility 0s linear .26s, border-color 0s linear .26s; }
 button.ghost { border-color: transparent; color: var(--muted); }
+.navlink { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; height: 34px; padding: 0 10px; border-radius: 7px; display: inline-flex; align-items: center; white-space: nowrap; }
+.navlink:hover { color: var(--ink); background: var(--hover); }
 button.ghost:hover { color: var(--ink); }
 .topbar .brand { display: flex; align-items: center; gap: 8px; margin-left: -8px; }
 .side { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; background: var(--panel); border-right: 1px solid var(--rule); padding: 20px; display: flex; flex-direction: column; gap: 24px; }
@@ -172,6 +174,7 @@ tbody tr:hover { background: var(--hover); }
     <label><input type="radio" name="dataset" value="sin">사인형 데이터</label>
   </div>
   <span class="spacer"></span>
+  <a class="navlink" href="mnist/">MNIST 숫자 인식</a>
   <div id="status" class="status" role="status">대기 중</div>
   <div class="actions">
     <button class="primary" id="btn-play"><svg class="ico-play"><use href="#i-play"/></svg><svg class="ico-pause"><use href="#i-pause"/></svg><span id="btn-play-label">학습 시작</span></button>

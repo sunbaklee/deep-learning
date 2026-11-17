@@ -12,10 +12,13 @@
 사용법
     python mnist_mlp.py
     python mnist_mlp.py --min-acc 0.96   # 테스트 정확도가 기준보다 낮으면 종료 코드 1
+    python mnist_mlp.py --export data    # 사이트(index.html)가 읽는 결과와 가중치를 data/에 저장
 """
 import argparse
+import json
 import os
 import sys
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -25,6 +28,59 @@ def section(title: str) -> None:
     print(f"\n===== {title} =====")
 
 
+def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_acc,
+           X_test, y_test, train0_image, train0_label) -> None:
+    """사이트가 읽는 결과(results.json)와 학습된 가중치(weights.json)를 저장한다."""
+    os.makedirs(out_dir, exist_ok=True)
+
+    probs = model.predict(X_test, verbose=0)
+    pred = np.argmax(probs, axis=1)
+
+    confusion = np.zeros((10, 10), dtype=int)
+    for t, p in zip(y_test, pred):
+        confusion[t, p] += 1
+
+    def to_img(v):
+        return np.rint(v.reshape(28, 28) * 255).astype(int).tolist()
+
+    samples = [{"image": to_img(X_test[i]), "label": int(y_test[i]), "pred": int(pred[i]),
+                "probs": np.round(probs[i], 4).tolist()} for i in range(10)]
+    wrong = [{"index": int(i), "image": to_img(X_test[i]), "label": int(y_test[i]), "pred": int(pred[i]),
+              "conf": round(float(probs[i].max()), 4)} for i in np.where(pred != y_test)[0][:12]]
+
+    run_url = ""
+    if os.environ.get("GITHUB_RUN_ID"):
+        run_url = (f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
+                   f"/actions/runs/{os.environ['GITHUB_RUN_ID']}")
+
+    results = {
+        "config": {"hidden": args.hidden, "epochs": args.epochs, "batch_size": args.batch_size,
+                   "validation_split": 0.2, "train_size": 48000, "val_size": 12000,
+                   "steps_per_epoch": steps, "params": int(model.count_params()),
+                   "layer_params": [int(layer.count_params()) for layer in model.layers]},
+        "run": {"tensorflow": tf.__version__,
+                "trained_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "train_seconds": round(train_seconds, 1),
+                "commit": os.environ.get("GITHUB_SHA", "")[:7], "run_url": run_url},
+        "history": {k: [round(float(v), 4) for v in vals] for k, vals in history.history.items()},
+        "test": {"loss": round(float(test_loss), 4), "accuracy": round(float(test_acc), 4),
+                 "correct": int((pred == y_test).sum()), "total": int(len(y_test))},
+        "train0": {"image": train0_image.astype(int).tolist(), "label": int(train0_label)},
+        "samples": samples,
+        "wrong": wrong,
+        "confusion": confusion.tolist(),
+    }
+    with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False, separators=(",", ":"))
+
+    (W1, b1), (W2, b2) = model.layers[0].get_weights(), model.layers[1].get_weights()
+    weights = {"shape": [784, args.hidden, 10],
+               "W1": np.round(W1.ravel(), 4).tolist(), "b1": np.round(b1, 4).tolist(),
+               "W2": np.round(W2.ravel(), 4).tolist(), "b2": np.round(b2, 4).tolist()}
+    with open(os.path.join(out_dir, "weights.json"), "w", encoding="utf-8") as f:
+        json.dump(weights, f, separators=(",", ":"))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="MNIST 은닉층 1개 완전연결 신경망")
     parser.add_argument("--epochs", type=int, default=5)
@@ -32,10 +88,10 @@ def main() -> int:
     parser.add_argument("--hidden", type=int, default=128, help="은닉층 뉴런 수")
     parser.add_argument("--min-acc", type=float, default=0.0, help="테스트 정확도 최소 기준 (0~1)")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--export", default="", help="사이트용 JSON을 저장할 폴더")
     args = parser.parse_args()
 
     tf.keras.utils.set_random_seed(args.seed)
-    np.set_printoptions(linewidth=140)
 
     # ---------- 1. 데이터 불러오기와 원본 확인 ----------
     section("1. 데이터 불러오기")
@@ -43,9 +99,10 @@ def main() -> int:
     print(f"학습 이미지 {X_train.shape}, 학습 정답 {y_train.shape}")
     print(f"테스트 이미지 {X_test.shape}, 테스트 정답 {y_test.shape}")
 
-    print(f"\nX_train[0]의 정답: {y_train[0]}")
+    train0_image, train0_label = X_train[0].copy(), y_train[0]
+    print(f"\nX_train[0]의 정답: {train0_label}")
     print("X_train[0]의 원본 픽셀값 28x28 (0=검정, 255=흰색):")
-    for row in X_train[0]:
+    for row in train0_image:
         print(" ".join(f"{v:3d}" for v in row))
 
     # ---------- 2. 정규화와 배열 변환 ----------
@@ -76,11 +133,13 @@ def main() -> int:
 
     # ---------- 4. 학습 ----------
     section("4. 학습")
-    steps = int(len(X_train) * 0.8) // args.batch_size
-    print(f"학습 {int(len(X_train) * 0.8):,}장 / 검증 {int(len(X_train) * 0.2):,}장, "
-          f"한 에폭 {steps:,}단계, 총 {steps * args.epochs:,}번 가중치 업데이트")
-    model.fit(X_train, Y_train, epochs=args.epochs, batch_size=args.batch_size,
-              validation_split=0.2, verbose=2)
+    steps = 48000 // args.batch_size
+    print(f"학습 48,000장 / 검증 12,000장, 한 에폭 {steps:,}단계, "
+          f"총 {steps * args.epochs:,}번 가중치 업데이트")
+    started = time.time()
+    history = model.fit(X_train, Y_train, epochs=args.epochs, batch_size=args.batch_size,
+                        validation_split=0.2, verbose=2)
+    train_seconds = time.time() - started
 
     # ---------- 5. 테스트와 예측 결과 ----------
     section("5. 테스트")
@@ -97,6 +156,11 @@ def main() -> int:
     print(f"\nX_test[0]의 예측 확률 (정답 {y_test[0]})")
     for digit, p in enumerate(probs[0]):
         print(f"  {digit}: {p:7.4f} {'#' * int(round(p * 40))}")
+
+    if args.export:
+        export(args.export, args, model, history, train_seconds, steps, test_loss, test_acc,
+               X_test, y_test, train0_image, train0_label)
+        print(f"\n사이트용 결과를 {args.export}/ 폴더에 저장했습니다.")
 
     # GitHub Actions에서 실행하면 결과를 실행 요약 화면에 표시한다
     summary = os.environ.get("GITHUB_STEP_SUMMARY")

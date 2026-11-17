@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MNIST 숫자 인식</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #F3F5F7; --panel: #FFFFFF; --ink: #17212B; --muted: #5A6774; --rule: #E1E6EB;
+  --control: #8A96A3; --hover: #F6F8FA;
+  --blue: #1D6AAE; --blue-soft: #EAF2FA;
+  --orange: #D55E00; --orange-text: #A44900;
+  --violet: #6E43A6; --ok: #2E7D5B; --ok-soft: #E9F4EE; --warn: #B3261E; --warn-soft: #FBECEA;
+  --sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.6 var(--sans); font-feature-settings: 'tnum'; }
+::selection { background: var(--blue-soft); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: #C5CDD5 transparent; }
+a { color: var(--blue); text-underline-offset: 3px; }
+code { font: 600 12.5px/1 var(--sans); background: var(--hover); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 5px; }
+
+/* ---------- 상단 바 ---------- */
+.topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+  height: 60px; padding: 0 20px; background: var(--panel); border-bottom: 1px solid var(--rule); }
+.topbar h1 { font-size: 16px; font-weight: 700; margin: 0; white-space: nowrap; }
+.topbar .meta { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .spacer { flex: 1; }
+.btn { font: 600 13px/1 var(--sans); display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px;
+  border-radius: 7px; border: 1px solid var(--control); background: var(--panel); color: var(--ink); cursor: pointer;
+  text-decoration: none; white-space: nowrap; transition: background-color .15s ease-out; }
+.btn:hover { background: var(--hover); }
+.btn.ghost { border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+/* ---------- 레이아웃 ---------- */
+.main { max-width: 1320px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.panel h2 { font-size: 15px; font-weight: 700; margin: 0; }
+.panel h3 { font-size: 13px; font-weight: 700; margin: 0 0 8px; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.row { display: grid; gap: 16px; }
+.row.play { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+
+.metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 0; margin: 0; }
+.metric { padding: 12px 18px; border-left: 1px solid var(--rule); }
+.metric:first-child { border-left: 0; }
+.metric dt { font-size: 12px; color: var(--muted); font-weight: 600; }
+.metric dd { margin: 2px 0 0; font: 700 22px/1.25 var(--sans); letter-spacing: -0.01em; }
+.metric dd small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+.metric dd.good { color: var(--ok); }
+
+/* ---------- 직접 써 보기 ---------- */
+.draw { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; margin-top: 14px; align-items: start; }
+.pad-wrap { display: grid; gap: 10px; justify-items: start; }
+#pad { width: 280px; height: 280px; background: #000; border-radius: 8px; touch-action: none; cursor: crosshair; display: block; }
+.pad-actions { display: flex; gap: 8px; align-items: center; width: 280px; }
+.pad-actions .hint { color: var(--muted); font-size: 12px; margin-left: auto; }
+.result { display: grid; gap: 14px; }
+.result-head { display: flex; align-items: center; gap: 18px; }
+.big-digit { font: 800 64px/1 var(--sans); letter-spacing: -0.03em; min-width: 52px; color: var(--blue); }
+.big-digit.empty { color: var(--rule); }
+.result-head .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.result-head .conf { font-size: 18px; font-weight: 700; }
+.seen { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+.seen canvas { width: 84px; height: 84px; image-rendering: pixelated; background: #000; border-radius: 4px; }
+.seen span { font-size: 11.5px; color: var(--muted); line-height: 1.4; max-width: 7.5em; }
+
+.bars { display: grid; gap: 5px; }
+.bar { display: grid; grid-template-columns: 16px minmax(0, 1fr) 54px; align-items: center; gap: 10px; font-size: 13px; }
+.bar b { font-weight: 700; text-align: center; }
+.bar .track { height: 14px; background: var(--hover); border-radius: 3px; overflow: hidden; }
+.bar .fill { height: 100%; width: 0; background: #A9C5DF; border-radius: 3px; transition: width .25s cubic-bezier(.2, .8, .2, 1); }
+.bar.top .fill { background: var(--blue); }
+.bar.top b, .bar.top output { color: var(--blue); }
+.bar output { text-align: right; color: var(--muted); font-weight: 600; }
+
+/* ---------- 차트 ---------- */
+.charts { display: grid; gap: 10px; margin-top: 12px; }
+.chart svg { width: 100%; height: 150px; display: block; overflow: visible; }
+.chart text { font: 11px var(--sans); fill: var(--muted); }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 0; border-top: 2.5px solid currentColor; }
+.legend .tr { color: var(--blue); } .legend .va { color: var(--orange); } .legend .va i { border-top-style: dashed; }
+.legend b { color: var(--ink); font-weight: 500; }
+
+/* ---------- 실습 단계 ---------- */
+.steps-title { display: flex; align-items: baseline; gap: 12px; margin: 8px 2px -4px; }
+.steps-title h2 { font-size: 18px; margin: 0; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.step { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px; }
+.step-text h2 { display: flex; align-items: baseline; gap: 10px; }
+.step-text h2 .n { font-size: 13px; color: var(--blue); font-weight: 700; }
+.step-text p, .step-text li { color: var(--ink); font-size: 13.5px; }
+.step-text ul { padding-left: 18px; margin: 10px 0 0; }
+.step-text li { margin-bottom: 6px; }
+.step-text .note { color: var(--muted); font-size: 12.5px; }
+.step-vis { min-width: 0; display: grid; gap: 16px; align-content: start; }
+.scroll-x { overflow-x: auto; }
+
+.pixels { display: grid; grid-template-columns: repeat(28, 18px); grid-auto-rows: 18px; width: max-content; border: 1px solid var(--rule); }
+.pixels span { display: grid; place-items: center; font-size: 7.5px; font-weight: 600; }
+.pair { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.thumb { image-rendering: pixelated; background: #000; border-radius: 4px; }
+.cap { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+#strip { width: 100%; height: 34px; image-rendering: pixelated; display: block; border-radius: 3px; }
+.strip-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px; }
+.calc-line { font-size: 15px; font-weight: 600; }
+.calc-line .muted { color: var(--muted); font-weight: 500; }
+.onehot { display: grid; grid-template-columns: repeat(10, 40px); gap: 4px; }
+.onehot div { height: 40px; border-radius: 6px; border: 1px solid var(--rule); display: grid; place-items: center; font-weight: 700; font-size: 15px; color: var(--muted); }
+.onehot div.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+.onehot-idx { display: grid; grid-template-columns: repeat(10, 40px); gap: 4px; font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+#net { width: 100%; max-width: 640px; height: 300px; display: block; }
+#net text { font: 600 11px var(--sans); fill: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }
+td.num, th.num { text-align: right; }
+thead th { color: var(--muted); font-weight: 600; font-size: 12px; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.split { display: flex; height: 34px; border-radius: 6px; overflow: hidden; font-size: 12.5px; font-weight: 700; color: #fff; }
+.split div { display: grid; place-items: center; }
+.split .tr { background: var(--blue); flex: 4; }
+.split .va { background: var(--orange); flex: 1; }
+.epoch { display: grid; grid-template-columns: 64px minmax(0, 1fr) 82px; gap: 10px; align-items: center; font-size: 13px; }
+.epoch .track { height: 8px; background: var(--blue); border-radius: 4px; }
+.epoch output { color: var(--muted); font-weight: 600; text-align: right; }
+
+.tiles { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--rule); border-radius: 8px; padding: 6px; background: var(--panel); cursor: pointer; display: grid; gap: 4px; justify-items: center; font: inherit; color: inherit; }
+.tile:hover { background: var(--hover); }
+.tile[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+.tile canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; border-radius: 4px; background: #000; }
+.tile .tp { font-size: 11.5px; color: var(--muted); }
+.tile .tp b { color: var(--ink); }
+.tile.miss .tp b.p { color: var(--warn); }
+.wrong { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; }
+.wrong .tile { cursor: default; }
+.wrong .tile:hover { background: var(--panel); }
+
+.cm { border-collapse: separate; border-spacing: 2px; width: auto; font-size: 11.5px; }
+.cm th, .cm td { border: 0; padding: 0; text-align: center; }
+.cm td { width: 44px; height: 30px; border-radius: 3px; font-weight: 600; }
+.cm thead th, .cm tbody th { color: var(--muted); font-weight: 600; width: 22px; }
+.cm-wrap { display: grid; grid-template-columns: auto auto; gap: 6px; align-items: center; width: max-content; }
+.cm-ylab { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.cm-xlab { grid-column: 2; text-align: center; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+
+.state { padding: 40px; text-align: center; color: var(--muted); }
+.state.err { color: var(--warn); }
+footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(--muted); font-size: 12.5px; }
+
+@media (max-width: 1100px) {
+  .row.play, .step { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric:nth-child(4) { border-left: 0; }
+  .metric:nth-child(n+4) { border-top: 1px solid var(--rule); }
+  .wrong { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .topbar .meta { display: none; }
+}
+@media (max-width: 640px) {
+  .draw { grid-template-columns: 1fr; }
+  .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric:nth-child(odd) { border-left: 0; }
+  .metric:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+@media (prefers-reduced-motion: reduce) { .bar .fill, .btn { transition: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></symbol>
+  <symbol id="i-erase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+</svg>
+
+<header class="topbar">
+  <a class="btn ghost" href="../" aria-label="선형회귀 대시보드로 돌아가기"><svg><use href="#i-back"/></svg>선형회귀</a>
+  <h1>MNIST 숫자 인식</h1>
+  <span class="meta" id="meta">784 → 128 → 10 완전연결 신경망</span>
+  <span class="spacer"></span>
+  <a class="btn" id="run-link" href="https://github.com/sunbaklee/linreg3d/actions" target="_blank" rel="noopener"><svg><use href="#i-run"/></svg>학습 기록</a>
+  <a class="btn" href="https://github.com/sunbaklee/linreg3d/blob/main/mnist/mnist_mlp.py" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>파이썬 코드</a>
+</header>
+
+<main class="main" id="app">
+  <div class="panel state" id="state">학습 결과를 불러오는 중이에요…</div>
+</main>
+<footer id="foot"></footer>
+
+<template id="tpl">
+  <section aria-labelledby="m-h">
+    <h2 class="sr-only" id="m-h" hidden>학습 결과 요약</h2>
+    <dl class="panel metrics">
+      <div class="metric"><dt>테스트 정확도</dt><dd class="good" id="m-acc"></dd></div>
+      <div class="metric"><dt>맞힌 이미지</dt><dd id="m-correct"></dd></div>
+      <div class="metric"><dt>테스트 손실</dt><dd id="m-loss"></dd></div>
+      <div class="metric"><dt>파라미터 수</dt><dd id="m-params"></dd></div>
+      <div class="metric"><dt>가중치 업데이트</dt><dd id="m-updates"></dd></div>
+      <div class="metric"><dt>학습 시간</dt><dd id="m-time"></dd></div>
+    </dl>
+  </section>
+
+  <section class="row play">
+    <div class="panel">
+      <h2>직접 써 보기</h2>
+      <p class="sub">검은 칸에 숫자 하나를 크게 써 보세요. 학습된 가중치로 브라우저에서 바로 계산해요.</p>
+      <div class="draw">
+        <div class="pad-wrap">
+          <canvas id="pad" width="280" height="280" aria-label="숫자를 쓰는 칸. 마우스나 손가락으로 숫자를 그리세요."></canvas>
+          <div class="pad-actions">
+            <button class="btn" id="clear" type="button"><svg><use href="#i-erase"/></svg>지우기</button>
+            <span class="hint">0~9 중 하나</span>
+          </div>
+        </div>
+        <div class="result">
+          <div class="result-head">
+            <div class="big-digit empty" id="big">?</div>
+            <div>
+              <div class="label">예측</div>
+              <div class="conf" id="conf" aria-live="polite">숫자를 써 주세요</div>
+            </div>
+            <div class="seen">
+              <canvas id="seen" width="28" height="28" aria-hidden="true"></canvas>
+              <span>모델이 보는 28×28 입력</span>
+            </div>
+          </div>
+          <div class="bars" id="draw-bars"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>학습 곡선</h2>
+      <p class="sub">에폭마다 학습 데이터와 검증 데이터에서 잰 값이에요.</p>
+      <div class="charts">
+        <div class="legend"><span class="tr"><i></i><b>학습 (48,000장)</b></span><span class="va"><i></i><b>검증 (12,000장)</b></span></div>
+        <div class="chart"><h3>정확도</h3><svg id="c-acc" role="img" aria-label="에폭별 정확도 그래프"></svg></div>
+        <div class="chart"><h3>손실 (범주형 교차 엔트로피)</h3><svg id="c-loss" role="img" aria-label="에폭별 손실 그래프"></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="steps-title"><h2>실습 단계</h2><p>파이썬 코드가 GitHub Actions에서 실제로 실행한 순서와 결과예요.</p></div>
+
+  <section class="panel step">
+    <div class="step-text">
+      <h2><span class="n">1</span>데이터 불러오기와 원본 확인</h2>
+      <ul>
+        <li><code>mnist.load_data()</code>로 학습 이미지 60,000장, 테스트 이미지 10,000장과 각 이미지의 정답을 불러와요.</li>
+        <li>오른쪽은 전처리 전의 <code>X_train[0]</code>이에요. 28×28 격자의 픽셀값 784개가 0(검정)부터 255(흰색)까지의 정수로 들어 있어요.</li>
+      </ul>
+    </div>
+    <div class="step-vis">
+      <div class="pair">
+        <div><canvas class="thumb" id="t0" width="28" height="28" style="width:140px;height:140px" aria-hidden="true"></canvas><div class="cap" id="t0-cap"></div></div>
+        <div class="scroll-x"><div class="pixels" id="pixels" role="img" aria-label="X_train[0]의 원본 픽셀값 28×28"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel step">
+    <div class="step-text">
+      <h2><span class="n">2</span>픽셀값 정규화와 배열 변환</h2>
+      <ul>
+        <li><code>astype("float32") / 255.0</code>으로 픽셀값을 0~1 범위의 실수로 바꿔요. 밝기의 비율은 그대로 두고 입력값의 크기만 줄여서 학습이 안정돼요.</li>
+        <li><code>reshape(-1, 784)</code>로 28×28 픽셀을 한 줄로 펼쳐요. 오른쪽 띠는 펼친 입력값 784개를 왼쪽부터 순서대로 그린 거예요.</li>
+        <li>정답은 원-핫 인코딩으로 바꿔요. 정답 자리에만 1이 들어가요.</li>
+      </ul>
+    </div>
+    <div class="step-vis">
+      <div class="calc-line">128 ÷ 255 = 0.502 <span class="muted">· 0 → 0.000 · 255 → 1.000</span></div>
+      <div>
+        <h3>X_train[0]의 입력값 784개 (0~1)</h3>
+        <canvas id="strip" width="784" height="1" role="img" aria-label="한 줄로 펼친 입력값 784개"></canvas>
+        <div class="strip-axis"><span>0</span><span>196</span><span>392</span><span>588</span><span>783</span></div>
+      </div>
+      <div>
+        <h3 id="oh-title">원-핫 인코딩</h3>
+        <div class="onehot" id="onehot"></div>
+        <div class="onehot-idx" aria-hidden="true"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel step">
+    <div class="step-text">
+      <h2><span class="n">3</span>완전연결 신경망 구성</h2>
+      <ul>
+        <li>은닉층의 뉴런 128개는 입력층의 뉴런 784개와 모두 연결돼요. 출력층의 뉴런 10개도 은닉층의 128개와 모두 연결돼요.</li>
+        <li>은닉층은 ReLU, 출력층은 Softmax를 써서 숫자 0~9의 확률을 내요.</li>
+      </ul>
+      <p class="note">그림은 뉴런 일부만 그렸어요. 실제 연결 수는 784×128 + 128×10 = 101,632개이고, 여기에 편향 138개를 더하면 파라미터 수가 돼요.</p>
+    </div>
+    <div class="step-vis">
+      <svg id="net" viewBox="0 0 640 300" role="img" aria-label="784, 128, 10개 뉴런으로 된 완전연결 신경망 구조도"></svg>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>층</th><th class="num">뉴런 수</th><th class="num">파라미터</th><th>역할</th></tr></thead>
+          <tbody id="layers"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel step">
+    <div class="step-text">
+      <h2><span class="n">4</span>모델 학습과 1500/1500의 의미</h2>
+      <ul>
+        <li>Adam으로 학습하고, 범주형 교차 엔트로피로 예측과 정답의 차이(손실)를 계산해요.</li>
+        <li><code>validation_split=0.2</code>로 60,000장 중 12,000장은 검증에, 48,000장은 학습에 써요.</li>
+        <li><code>batch_size=32</code>이므로 한 에폭은 48,000 ÷ 32 = 1,500단계예요. 한 단계마다 이미지 32장의 손실로 가중치를 한 번 고쳐요.</li>
+        <li>학습 기록의 <code>1500/1500</code>은 그 에폭의 배치를 모두 처리했다는 뜻이에요.</li>
+      </ul>
+    </div>
+    <div class="step-vis">
+      <div>
+        <h3>학습용 60,000장 나누기</h3>
+        <div class="split"><div class="tr">학습 48,000장</div><div class="va">검증 12,000장</div></div>
+      </div>
+      <div>
+        <h3>에폭별 진행</h3>
+        <div class="bars" id="epochs"></div>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>에폭</th><th class="num">단계</th><th class="num">학습 손실</th><th class="num">학습 정확도</th><th class="num">검증 손실</th><th class="num">검증 정확도</th></tr></thead>
+          <tbody id="epoch-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel step">
+    <div class="step-text">
+      <h2><span class="n">5</span>테스트와 예측 결과</h2>
+      <ul>
+        <li>학습에 쓰지 않은 테스트 이미지 10,000장으로 최종 정확도를 계산해요.</li>
+        <li>테스트 이미지 10장의 정답과 예측을 함께 보여 줘요. 이미지를 누르면 0~9의 예측 확률을 볼 수 있어요.</li>
+        <li><code>argmax</code>로 확률이 가장 높은 숫자를 예측으로 골라요.</li>
+      </ul>
+    </div>
+    <div class="step-vis">
+      <div class="tiles" id="tiles"></div>
+      <div>
+        <h3 id="sel-title">예측 확률</h3>
+        <div class="bars" id="sel-bars"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row play">
+    <div class="panel">
+      <h2>혼동 행렬</h2>
+      <p class="sub">테스트 10,000장에서 실제 숫자(행)를 무엇으로 예측했는지 센 표예요. 대각선 밖의 칸이 틀린 경우예요.</p>
+      <div class="scroll-x" style="margin-top:12px">
+        <div class="cm-wrap">
+          <div class="cm-ylab">실제 숫자</div>
+          <table class="cm" id="cm"></table>
+          <div class="cm-xlab">예측한 숫자</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>틀린 예측</h2>
+      <p class="sub" id="wrong-sub">테스트 이미지 중 모델이 틀린 앞쪽 12장이에요.</p>
+      <div class="wrong" id="wrong" style="margin-top:12px; grid-template-columns: repeat(4, minmax(0, 1fr));"></div>
+    </div>
+  </section>
+</template>
+
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const pct = (v, d = 2) => (v * 100).toFixed(d) + '%';
+  const fmt = n => n.toLocaleString('ko-KR');
+
+  // 28×28 회색조 이미지를 캔버스에 그린다 (값 0~255)
+  function paint(canvas, img) {
+    const ctx = canvas.getContext('2d'), data = ctx.createImageData(28, 28);
+    for (let r = 0; r < 28; r++) for (let c = 0; c < 28; c++) {
+      const v = img[r][c], k = (r * 28 + c) * 4;
+      data.data[k] = data.data[k + 1] = data.data[k + 2] = v; data.data[k + 3] = 255;
+    }
+    ctx.putImageData(data, 0, 0);
+  }
+
+  function renderBars(el, probs) {
+    const top = probs.indexOf(Math.max(...probs));
+    if (!el.children.length) {
+      el.innerHTML = probs.map((_, d) =>
+        `<div class="bar"><b>${d}</b><div class="track"><div class="fill"></div></div><output>0%</output></div>`).join('');
+    }
+    [...el.children].forEach((row, d) => {
+      row.classList.toggle('top', d === top);
+      row.querySelector('.fill').style.width = (probs[d] * 100).toFixed(1) + '%';
+      row.querySelector('output').textContent = probs[d] >= 0.0005 ? pct(probs[d], 1) : '0%';
+    });
+    return top;
+  }
+
+  // ---------- 선 그래프 (SVG) ----------
+  function lineChart(svg, series, fmtY) {
+    const W = svg.clientWidth || 400, H = 150, L = 44, R = 10, T = 8, B = 22;
+    const all = series.flatMap(s => s.values);
+    let lo = Math.min(...all), hi = Math.max(...all);
+    const pad = (hi - lo) * 0.15 || 0.01; lo -= pad; hi += pad;
+    const n = series[0].values.length;
+    const x = i => L + (W - L - R) * (n === 1 ? 0.5 : i / (n - 1));
+    const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    let out = '';
+    for (let k = 0; k <= 3; k++) {
+      const v = lo + (hi - lo) * k / 3, yy = y(v);
+      out += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${css('--rule')}"/>` +
+             `<text x="${L - 8}" y="${yy + 4}" text-anchor="end">${fmtY(v)}</text>`;
+    }
+    for (let i = 0; i < n; i++) out += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle">${i + 1}에폭</text>`;
+    series.forEach(s => {
+      const pts = s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
+      out += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" ${s.dash ? 'stroke-dasharray="6 4"' : ''} stroke-linejoin="round"/>`;
+      s.values.forEach((v, i) => {
+        out += `<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="${css('--panel')}" stroke="${s.color}" stroke-width="2"><title>${s.name} ${i + 1}에폭: ${fmtY(v, true)}</title></circle>`;
+      });
+    });
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = out;
+  }
+
+  // ---------- 신경망 구조도 (SVG) ----------
+  function drawNet(svg) {
+    const cols = [
+      { x: 70, n: 7, label: '입력층 784', names: null },
+      { x: 320, n: 6, label: '은닉층 128 (ReLU)', names: null },
+      { x: 570, n: 10, label: '출력층 10 (Softmax)', names: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }
+    ];
+    const top = 26, bottom = 262;
+    const pos = cols.map(c => {
+      const gap = c.names ? 0 : 1;               // 생략 표시(⋮) 자리
+      const slots = c.n + gap;
+      return Array.from({ length: slots }, (_, i) => ({ x: c.x, y: top + (bottom - top) * (i + 0.5) / slots, gap: !c.names && i === c.n - 2 }));
+    }).map(arr => arr);
+    const nodes = pos.map(arr => arr.filter(p => !p.gap));
+    let out = '';
+    for (let k = 0; k < 2; k++) for (const a of nodes[k]) for (const b of nodes[k + 1]) {
+      out += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${k ? css('--violet') : css('--blue')}" stroke-opacity=".18"/>`;
+    }
+    pos.forEach((arr, k) => arr.forEach((p, i) => {
+      if (p.gap) { out += `<text x="${p.x}" y="${p.y + 5}" text-anchor="middle" style="font-size:16px">⋮</text>`; return; }
+      const fill = k === 0 ? css('--blue-soft') : k === 1 ? '#F1ECF8' : css('--ok-soft');
+      const stroke = k === 0 ? css('--blue') : k === 1 ? css('--violet') : css('--ok');
+      out += `<circle cx="${p.x}" cy="${p.y}" r="${k === 2 ? 9 : 10}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+      if (cols[k].names) out += `<text x="${p.x + 18}" y="${p.y + 4}">${cols[k].names[i]}</text>`;
+    }));
+    cols.forEach(c => { out += `<text x="${c.x}" y="292" text-anchor="middle" style="fill:${css('--ink')}">${c.label}</text>`; });
+    svg.innerHTML = out;
+  }
+
+  // ---------- 직접 써 보기: 전처리와 순전파 ----------
+  function setupPad(W) {
+    const [nIn, nHid, nOut] = W.shape;
+    const W1 = Float32Array.from(W.W1), b1 = Float32Array.from(W.b1);
+    const W2 = Float32Array.from(W.W2), b2 = Float32Array.from(W.b2);
+    const pad = $('pad'), ctx = pad.getContext('2d');
+    const seen = $('seen'), sctx = seen.getContext('2d');
+    const tmp = document.createElement('canvas'); tmp.width = tmp.height = 28;
+    const tctx = tmp.getContext('2d');
+    const bars = $('draw-bars');
+
+    function reset() {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 280, 280);
+      sctx.fillStyle = '#000'; sctx.fillRect(0, 0, 28, 28);
+      renderBars(bars, new Array(10).fill(0));
+      [...bars.children].forEach(r => r.classList.remove('top'));
+      $('big').textContent = '?'; $('big').classList.add('empty');
+      $('conf').textContent = '숫자를 써 주세요';
+    }
+
+    // MNIST와 같은 방식: 글자를 20×20 안에 맞추고, 무게중심을 28×28의 가운데로 옮긴다
+    function toInput() {
+      const src = ctx.getImageData(0, 0, 280, 280).data;
+      let x0 = 280, y0 = 280, x1 = -1, y1 = -1;
+      for (let y = 0; y < 280; y++) for (let x = 0; x < 280; x++) {
+        if (src[(y * 280 + x) * 4] > 30) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      if (x1 < 0) return null;
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, s = 20 / Math.max(w, h);
+      const dw = w * s, dh = h * s;
+      tctx.fillStyle = '#000'; tctx.fillRect(0, 0, 28, 28);
+      tctx.imageSmoothingEnabled = true; tctx.imageSmoothingQuality = 'high';
+      tctx.drawImage(pad, x0, y0, w, h, (28 - dw) / 2, (28 - dh) / 2, dw, dh);
+      const d = tctx.getImageData(0, 0, 28, 28).data;
+      const g = new Float32Array(784);
+      let m = 0, cx = 0, cy = 0;
+      for (let i = 0; i < 784; i++) { const v = d[i * 4] / 255; g[i] = v; m += v; cx += v * (i % 28); cy += v * Math.floor(i / 28); }
+      const sx = Math.round(13.5 - cx / m), sy = Math.round(13.5 - cy / m);
+      const x = new Float32Array(784);
+      for (let r = 0; r < 28; r++) for (let c = 0; c < 28; c++) {
+        const rr = r - sy, cc = c - sx;
+        if (rr >= 0 && rr < 28 && cc >= 0 && cc < 28) x[r * 28 + c] = g[rr * 28 + cc];
+      }
+      return x;
+    }
+
+    function predict(x) {
+      const h = new Float32Array(nHid);
+      for (let j = 0; j < nHid; j++) h[j] = b1[j];
+      for (let i = 0; i < nIn; i++) {
+        const xi = x[i]; if (!xi) continue;
+        const row = i * nHid;
+        for (let j = 0; j < nHid; j++) h[j] += xi * W1[row + j];
+      }
+      for (let j = 0; j < nHid; j++) if (h[j] < 0) h[j] = 0;          // ReLU
+      const z = new Float64Array(nOut);
+      for (let k = 0; k < nOut; k++) z[k] = b2[k];
+      for (let j = 0; j < nHid; j++) { const hj = h[j]; if (!hj) continue; for (let k = 0; k < nOut; k++) z[k] += hj * W2[j * nOut + k]; }
+      const mx = Math.max(...z), e = Array.from(z, v => Math.exp(v - mx)), sum = e.reduce((a, b) => a + b, 0);
+      return e.map(v => v / sum);                                       // Softmax
+    }
+
+    let queued = false;
+    function update() {
+      queued = false;
+      const x = toInput();
+      if (!x) return;
+      const img = sctx.createImageData(28, 28);
+      for (let i = 0; i < 784; i++) { const v = Math.round(x[i] * 255); img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
+      sctx.putImageData(img, 0, 0);
+      const p = predict(x), top = renderBars(bars, p);
+      $('big').textContent = top; $('big').classList.remove('empty');
+      $('conf').textContent = `${top} (${pct(p[top], 1)})`;
+    }
+    const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+
+    let drawing = false, last = null;
+    const point = e => { const r = pad.getBoundingClientRect(); return [(e.clientX - r.left) * 280 / r.width, (e.clientY - r.top) * 280 / r.height]; };
+    pad.addEventListener('pointerdown', e => {
+      drawing = true; last = point(e); try { pad.setPointerCapture(e.pointerId); } catch (err) {}
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(last[0], last[1], 9, 0, Math.PI * 2); ctx.fill(); schedule();
+    });
+    pad.addEventListener('pointermove', e => {
+      if (!drawing) return;
+      const p = point(e);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 18; ctx.lineCap = ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+      last = p; schedule();
+    });
+    const end = () => { drawing = false; last = null; };
+    pad.addEventListener('pointerup', end);
+    pad.addEventListener('pointercancel', end);
+    pad.addEventListener('lostpointercapture', end);
+    $('clear').addEventListener('click', reset);
+    reset();
+  }
+
+  // ---------- 화면 채우기 ----------
+  function render(R, W) {
+    $('app').innerHTML = '';
+    $('app').appendChild($('tpl').content.cloneNode(true));
+    const cfg = R.config, H = R.history, T = R.test;
+
+    const when = R.run.trained_at ? new Date(R.run.trained_at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    $('meta').textContent = `784 → ${cfg.hidden} → 10 · TensorFlow ${R.run.tensorflow}` + (when ? ` · ${when} 학습` : '');
+    if (R.run.run_url) $('run-link').href = R.run.run_url;
+    $('foot').innerHTML = `이 페이지의 결과와 가중치는 GitHub Actions가 <a href="https://github.com/sunbaklee/linreg3d/blob/main/mnist/mnist_mlp.py">mnist_mlp.py</a>를 실행해 만든 거예요.` +
+      (R.run.commit ? ` 커밋 <code>${R.run.commit}</code>.` : '');
+
+    $('m-acc').textContent = pct(T.accuracy);
+    $('m-correct').innerHTML = `${fmt(T.correct)}<small>/ ${fmt(T.total)}</small>`;
+    $('m-loss').textContent = T.loss.toFixed(4);
+    $('m-params').textContent = fmt(cfg.params);
+    $('m-updates').innerHTML = `${fmt(cfg.steps_per_epoch * cfg.epochs)}<small>회</small>`;
+    $('m-time').innerHTML = `${R.run.train_seconds}<small>초</small>`;
+
+    // 학습 곡선
+    const blue = css('--blue'), orange = css('--orange');
+    const drawCharts = () => {
+      lineChart($('c-acc'), [{ name: '학습', values: H.accuracy, color: blue }, { name: '검증', values: H.val_accuracy, color: orange, dash: true }],
+        (v, full) => (v * 100).toFixed(full ? 2 : 1) + '%');
+      lineChart($('c-loss'), [{ name: '학습', values: H.loss, color: blue }, { name: '검증', values: H.val_loss, color: orange, dash: true }],
+        (v, full) => v.toFixed(full ? 4 : 3));
+    };
+    drawCharts();
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawCharts, 150); });
+
+    // 1단계
+    const t0 = R.train0;
+    paint($('t0'), t0.image);
+    $('t0-cap').textContent = `X_train[0] · 정답 ${t0.label}`;
+    $('pixels').innerHTML = t0.image.flat().map(v =>
+      `<span style="background:rgb(${v},${v},${v});color:${v > 127 ? '#000' : '#7D8790'}">${v}</span>`).join('');
+
+    // 2단계
+    const sctx = $('strip').getContext('2d'), sd = sctx.createImageData(784, 1);
+    t0.image.flat().forEach((v, i) => { sd.data[i * 4] = sd.data[i * 4 + 1] = sd.data[i * 4 + 2] = v; sd.data[i * 4 + 3] = 255; });
+    sctx.putImageData(sd, 0, 0);
+    $('oh-title').textContent = `원-핫 인코딩: 정답 ${t0.label}`;
+    $('onehot').innerHTML = Array.from({ length: 10 }, (_, d) => `<div class="${d === t0.label ? 'on' : ''}">${d === t0.label ? 1 : 0}</div>`).join('');
+
+    // 3단계
+    drawNet($('net'));
+    const lp = cfg.layer_params;
+    $('layers').innerHTML =
+      `<tr><td>입력층</td><td class="num">784</td><td class="num">0</td><td>펼친 픽셀값을 받음</td></tr>` +
+      `<tr><td>은닉층 (Dense)</td><td class="num">${cfg.hidden}</td><td class="num">${fmt(lp[0])}</td><td>입력층의 모든 뉴런과 연결, ReLU</td></tr>` +
+      `<tr><td>출력층 (Dense)</td><td class="num">10</td><td class="num">${fmt(lp[1])}</td><td>은닉층의 모든 뉴런과 연결, Softmax</td></tr>` +
+      `<tr><td><b>합계</b></td><td></td><td class="num"><b>${fmt(cfg.params)}</b></td><td></td></tr>`;
+
+    // 4단계
+    const spe = cfg.steps_per_epoch;
+    $('epochs').innerHTML = H.loss.map((_, i) =>
+      `<div class="epoch"><span>${i + 1}에폭</span><div class="track" title="${spe}/${spe}"></div><output>${spe}/${spe}</output></div>`).join('');
+    $('epoch-table').innerHTML = H.loss.map((_, i) =>
+      `<tr><td>${i + 1}</td><td class="num">${fmt(spe * (i + 1))}</td><td class="num">${H.loss[i].toFixed(4)}</td><td class="num">${pct(H.accuracy[i])}</td>` +
+      `<td class="num">${H.val_loss[i].toFixed(4)}</td><td class="num">${pct(H.val_accuracy[i])}</td></tr>`).join('');
+
+    // 5단계
+    const tiles = $('tiles');
+    tiles.innerHTML = R.samples.map((s, i) =>
+      `<button type="button" class="tile${s.pred !== s.label ? ' miss' : ''}" aria-pressed="${i === 0}" data-i="${i}">` +
+      `<canvas width="28" height="28" aria-hidden="true"></canvas>` +
+      `<span class="tp">정답 <b>${s.label}</b> · 예측 <b class="p">${s.pred}</b></span></button>`).join('');
+    [...tiles.children].forEach((b, i) => paint(b.querySelector('canvas'), R.samples[i].image));
+    const select = i => {
+      [...tiles.children].forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+      const s = R.samples[i];
+      $('sel-title').textContent = `X_test[${i}]의 예측 확률 · 정답 ${s.label}, 예측 ${s.pred}`;
+      renderBars($('sel-bars'), s.probs);
+    };
+    tiles.addEventListener('click', e => { const b = e.target.closest('.tile'); if (b) select(+b.dataset.i); });
+    const firstMiss = R.samples.findIndex(s => s.pred !== s.label);
+    select(0);
+
+    // 혼동 행렬
+    const cm = R.confusion, max = Math.max(...cm.flat().filter((_, k) => k % 11 !== 0));
+    let html = '<thead><tr><th></th>' + cm.map((_, d) => `<th>${d}</th>`).join('') + '</tr></thead><tbody>';
+    cm.forEach((row, t) => {
+      html += `<tr><th>${t}</th>` + row.map((v, p) => {
+        if (t === p) return `<td style="background:${css('--blue')};color:#fff" title="실제 ${t}, 예측 ${p}: ${v}장">${v}</td>`;
+        const a = v ? 0.12 + 0.75 * v / max : 0;
+        return `<td style="background:rgba(179,38,30,${a.toFixed(3)});color:${a > 0.5 ? '#fff' : v ? css('--ink') : css('--rule')}" title="실제 ${t}, 예측 ${p}: ${v}장">${v}</td>`;
+      }).join('') + '</tr>';
+    });
+    $('cm').innerHTML = html + '</tbody>';
+
+    // 틀린 예측
+    const wrong = $('wrong');
+    wrong.innerHTML = R.wrong.map(w =>
+      `<div class="tile miss"><canvas width="28" height="28" aria-hidden="true"></canvas>` +
+      `<span class="tp">정답 <b>${w.label}</b> · 예측 <b class="p">${w.pred}</b></span></div>`).join('');
+    [...wrong.children].forEach((t, i) => paint(t.querySelector('canvas'), R.wrong[i].image));
+    $('wrong-sub').textContent = `테스트 10,000장 중 ${fmt(T.total - T.correct)}장을 틀렸어요. 그중 앞쪽 ${R.wrong.length}장이에요.`;
+
+    setupPad(W);
+  }
+
+  Promise.all(['data/results.json', 'data/weights.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })))
+    .then(([R, W]) => render(R, W))
+    .catch(() => {
+      const s = $('state');
+      s.classList.add('err');
+      s.textContent = '학습 결과를 불러오지 못했어요. GitHub Actions의 학습이 끝난 뒤 새로고침해 주세요.';
+    });
+})();
+</script>
+</body>
+</html>
