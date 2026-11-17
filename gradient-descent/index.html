@@ -24,8 +24,7 @@ body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); fon
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- 상단 바 ---------- */
-.topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 20px;
-  height: 60px; padding: 0 20px; background: var(--panel); border-bottom: 1px solid var(--rule); }
+.topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; background: var(--panel); border-bottom: 1px solid var(--rule); }
 .topbar h1 { font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.01em; white-space: nowrap; }
 .topbar .formula { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .topbar .spacer { flex: 1; }
@@ -60,64 +59,67 @@ button.icon { width: 34px; padding: 0; }
 .seg label:has(input:focus-visible) { outline: 2px solid var(--blue); outline-offset: 1px; }
 .seg button:hover:not([aria-pressed="true"]) { background: transparent; color: var(--ink); }
 
-/* ---------- 레이아웃 ---------- */
-.shell { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: calc(100vh - 60px);
+/* ---------- 레이아웃: 화면 하나에 맞춘다 ---------- */
+.topbar { height: 52px; gap: 14px; padding: 0 16px; }
+.shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); height: calc(100vh - 52px);
   transition: grid-template-columns .26s cubic-bezier(.2, .8, .2, 1); }
 .shell.collapsed { grid-template-columns: 0 minmax(0, 1fr); }
-.side { overflow-x: hidden; transition: visibility 0s; }
-.side > * { width: 240px; flex: none; }
+.side { overflow-x: hidden; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--rule);
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; transition: visibility 0s; }
+.side > * { width: 228px; flex: none; }
 .shell.collapsed .side { visibility: hidden; border-right-color: transparent; transition: visibility 0s linear .26s, border-color 0s linear .26s; }
 button.ghost { border-color: transparent; color: var(--muted); }
+button.ghost:hover { color: var(--ink); }
 .navlink { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; height: 34px; padding: 0 10px; border-radius: 7px; display: inline-flex; align-items: center; white-space: nowrap; }
 .navlink:hover { color: var(--ink); background: var(--hover); }
 .navlink.home { padding: 0 6px; margin-left: 2px; }
 .crumb { color: var(--rule); font-weight: 600; margin: 0 -2px; }
-button.ghost:hover { color: var(--ink); }
-.topbar .brand { display: flex; align-items: center; gap: 8px; margin-left: -8px; }
-.side { position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; background: var(--panel); border-right: 1px solid var(--rule); padding: 20px; display: flex; flex-direction: column; gap: 24px; }
-.side .intro { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
-.side h2 { font-size: 12px; font-weight: 700; color: var(--muted); margin: 0 0 12px; }
-.ctl { margin-bottom: 14px; }
-.ctl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+.topbar .brand { display: flex; align-items: center; gap: 8px; margin-left: -6px; }
+.side .intro { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+.side h2 { font-size: 12px; font-weight: 700; color: var(--muted); margin: 0 0 8px; }
+.ctl { margin-bottom: 8px; }
+.ctl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; font-size: 13px; }
 .ctl-row output { font-size: 13px; font-weight: 600; color: var(--ink); }
 input[type=range] { width: 100%; height: 22px; margin: 0; accent-color: var(--blue); cursor: pointer; }
-.check { display: flex; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; cursor: pointer; margin-bottom: 6px; }
+.check { display: flex; align-items: center; gap: 8px; min-height: 28px; font-size: 13px; cursor: pointer; margin-bottom: 4px; }
 .check input { width: 16px; height: 16px; margin: 0; accent-color: var(--violet); }
-.side > .keys-help { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); display: grid; gap: 6px; }
+.side > .keys-help { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); display: grid; gap: 5px; }
 kbd { font: 600 11px/1 var(--sans); padding: 3px 6px; border: 1px solid var(--control); border-bottom-width: 2px; border-radius: 4px; color: var(--ink); background: var(--panel); }
 
-.main { padding: 16px; display: grid; gap: 16px; align-content: start; }
-.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; min-width: 0; }
-.panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.panel h2 { font-size: 14px; font-weight: 700; margin: 0; }
-.panel .sub { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.main { padding: 10px; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 10px; min-height: 0; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap; flex: none; }
+.panel-title { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.panel h2 { font-size: 13.5px; font-weight: 700; margin: 0; white-space: nowrap; }
+.panel .sub { margin: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.plot { flex: 1; min-height: 0; }
 
 /* 지표 줄 */
-.metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 0; margin: 0; }
-.metric { padding: 12px 18px; border-left: 1px solid var(--rule); }
+.metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 0; margin: 0; flex-direction: row; }
+.metric { padding: 7px 14px; border-left: 1px solid var(--rule); }
 .metric:first-child { border-left: 0; }
-.metric dt { font-size: 12px; color: var(--muted); font-weight: 600; }
-.metric dd { margin: 2px 0 0; font: 700 22px/1.25 var(--sans); letter-spacing: -0.01em; }
-.metric dd small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.metric dt { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.metric dd { margin: 0; font: 700 18px/1.3 var(--sans); letter-spacing: -0.01em; }
 .metric dd.delta-down { color: var(--ok); } .metric dd.delta-up { color: var(--warn); }
 
-.upper { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; }
-.right-col { display: grid; gap: 16px; grid-template-rows: auto auto; }
-.lower { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; }
-#plotvec { height: 460px; cursor: crosshair; }
-.vec-legend .k-arrow { color: #8FA3B6; } .vec-legend .k-grad { color: var(--orange); }
-.vec-legend .k-arrow i, .vec-legend .k-grad i { height: 2px; position: relative; }
-.vec-legend .k-arrow i::after, .vec-legend .k-grad i::after { content: ""; position: absolute; right: -2px; top: -3px; border: 4px solid transparent; border-left: 6px solid currentColor; border-right: 0; }
-.calc-wrap { display: grid; gap: 16px; align-content: start; }
+/* 3열 2행 격자 */
+.board { display: grid; gap: 10px; min-height: 0;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 4fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "s3d vec dat" "s3d loss calc"; }
+.a-3d { grid-area: s3d; } .a-vec { grid-area: vec; } .a-dat { grid-area: dat; } .a-loss { grid-area: loss; } .a-calc { grid-area: calc; }
 
-#plot3d { height: 500px; cursor: grab; }
+#plot3d { cursor: grab; }
 #plot3d.panning { cursor: move; }
-#plot2d { height: 270px; }
-#plotloss { height: 170px; }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.toolbar .gap { width: 6px; }
+#plotvec { cursor: crosshair; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.toolbar button { height: 28px; padding: 0 9px; font-size: 12.5px; }
+.toolbar button.icon { width: 28px; padding: 0; }
+.toolbar .seg { padding: 2px; }
+.toolbar .seg button { height: 24px; padding: 0 9px; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; font-size: 12px; color: var(--muted); flex: none; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 14px; height: 3px; border-radius: 2px; background: currentColor; }
 .legend .k-hist { color: var(--ink); } .legend .k-pred { color: var(--violet); }
@@ -125,37 +127,45 @@ kbd { font: 600 11px/1 var(--sans); padding: 3px 6px; border: 1px solid var(--co
 .legend .k-cur { color: var(--orange); } .legend .k-cur i, .legend .k-opt i { width: 9px; height: 9px; border-radius: 50%; }
 .legend .k-opt { color: var(--ok); } .legend .k-opt i { border-radius: 1px; transform: rotate(45deg); width: 8px; height: 8px; }
 .legend b { color: var(--ink); font-weight: 500; }
+.legend .k-arrow { color: #8FA3B6; } .legend .k-grad { color: var(--orange); }
+.legend .k-arrow i, .legend .k-grad i { height: 2px; position: relative; }
+.legend .k-arrow i::after, .legend .k-grad i::after { content: ""; position: absolute; right: -2px; top: -3px; border: 4px solid transparent; border-left: 6px solid currentColor; border-right: 0; }
 
-.calc { font: 13.5px/2 var(--sans); margin-top: 10px; overflow-x: auto; white-space: nowrap; }
-.calc .lhs { color: var(--muted); }
-.calc .res { color: var(--violet); font-weight: 700; }
-.table-wrap { overflow-x: auto; margin-top: 10px; }
+/* 계산·데이터 탭 */
+.tabs { display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--hover); border: 1px solid var(--rule); }
+.tabs button { height: 26px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12.5px; }
+.tabs button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(23,33,43,.12); }
+.tabs button:hover:not([aria-selected="true"]) { background: transparent; color: var(--ink); }
+.tabpanel { flex: 1; min-height: 0; overflow: auto; margin-top: 8px; }
+.tabpanel[hidden] { display: none; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
-th, td { padding: 6px 7px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
-thead th { color: var(--muted); font-weight: 600; font-size: 12px; }
+th, td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+thead th { color: var(--muted); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); }
 tbody th { text-align: left; font-weight: 700; }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
-tr.r-x th, tr.r-y th { color: var(--orange-text); }
-tr.r-h th { color: var(--blue); }
-tbody tr:hover { background: var(--hover); }
+td.res { color: var(--violet); font-weight: 700; }
+.calc-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+.calc-note b { color: var(--ink); font-weight: 600; }
+th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
 
-@media (max-width: 1240px) {
-  .upper { grid-template-columns: 1fr; }
-  .right-col { grid-template-columns: 1fr 1fr; grid-template-rows: none; }
-  #plot2d, #plotloss { height: 260px; }
-  .topbar .formula { display: none; }
+/* 화면이 작으면 스크롤하는 배치로 바꾼다 */
+@media (max-width: 1100px), (max-height: 600px) {
+  .shell { height: auto; min-height: calc(100vh - 52px); }
+  .side { position: sticky; top: 0; max-height: calc(100vh - 52px); }
+  .board { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-template-areas: "s3d s3d" "vec dat" "loss calc"; }
+  .a-3d { height: 460px; } .a-vec, .a-dat, .a-loss, .a-calc { height: 330px; }
 }
-@media (max-width: 960px) {
+@media (max-width: 1440px) { .topbar .formula { display: none; } }
+@media (max-width: 760px) {
   .shell { grid-template-columns: 1fr; }
-  .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .side { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--rule); }
   .side > * { width: auto; }
   .shell.collapsed { grid-template-columns: 1fr; }
   .shell.collapsed .side { display: none; }
+  .board { grid-template-columns: 1fr; grid-template-areas: "s3d" "vec" "dat" "loss" "calc"; }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metric:nth-child(odd) { border-left: 0; }
-  .right-col, .lower { grid-template-columns: 1fr; }
-  #plotvec { height: 380px; }
-  .topbar { height: auto; flex-wrap: wrap; padding: 12px 16px; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .status[data-state="run"]::before { animation: none; } button, .shell, .side { transition: none !important; } }
 </style>
@@ -220,87 +230,77 @@ tbody tr:hover { background: var(--hover); }
 
   <main class="main">
     <section aria-labelledby="metrics-h">
-    <h2 class="sr-only" id="metrics-h">학습 현황</h2>
-    <dl class="panel metrics">
-      <div class="metric"><dt>단계</dt><dd id="s-step">0</dd></div>
-      <div class="metric"><dt>비용 J</dt><dd id="s-cost">0</dd></div>
-      <div class="metric"><dt>다음 단계 변화 ΔJ</dt><dd id="s-delta">0</dd></div>
-      <div class="metric"><dt>기울기 크기 |∇J|</dt><dd id="s-grad">0</dd></div>
-      <div class="metric"><dt>최솟값까지 거리</dt><dd id="s-dist">0</dd></div>
-    </dl>
+      <h2 class="sr-only" id="metrics-h">학습 현황</h2>
+      <dl class="panel metrics">
+        <div class="metric"><dt>단계</dt><dd id="s-step">0</dd></div>
+        <div class="metric"><dt>비용 J</dt><dd id="s-cost">0</dd></div>
+        <div class="metric"><dt>다음 단계 변화 ΔJ</dt><dd id="s-delta">0</dd></div>
+        <div class="metric"><dt>기울기 크기 |∇J|</dt><dd id="s-grad">0</dd></div>
+        <div class="metric"><dt>최솟값까지 거리</dt><dd id="s-dist">0</dd></div>
+      </dl>
     </section>
 
-    <section class="upper">
-      <div class="panel">
+    <div class="board">
+      <section class="panel a-3d">
         <div class="panel-head">
-          <div>
-            <h2>비용 곡면 J(w₁, w₀)</h2>
-            <p class="sub">드래그하면 회전하고, 휠을 굴리면 확대·축소합니다.</p>
-          </div>
+          <div class="panel-title"><h2>비용 곡면 J(w₁, w₀)</h2></div>
           <div class="toolbar" role="group" aria-label="3D 보기 조작">
             <div class="seg" role="group" aria-label="드래그 동작">
               <button id="drag-rotate" aria-pressed="true">회전</button><button id="drag-pan" aria-pressed="false">이동</button>
             </div>
             <button class="icon" id="btn-zoom-in" aria-label="확대"><svg><use href="#i-plus"/></svg></button>
             <button class="icon" id="btn-zoom-out" aria-label="축소"><svg><use href="#i-minus"/></svg></button>
-            <span class="gap"></span>
             <button id="btn-cam-default">기본 시점</button>
             <button id="btn-cam-top">위에서</button>
           </div>
         </div>
-        <div id="plot3d" role="img" aria-label="비용 곡면 3D 그래프"></div>
+        <div id="plot3d" class="plot" role="img" aria-label="비용 곡면 3D 그래프" title="드래그하면 회전하고, 휠을 굴리면 확대·축소합니다."></div>
         <div class="legend">
           <span class="k-hist"><i></i><b>지나온 경로</b></span>
           <span class="k-pred"><i></i><b>다음 예상 경로</b></span>
           <span class="k-cur"><i></i><b>현재 위치</b></span>
           <span class="k-opt"><i></i><b>최솟값</b></span>
         </div>
-      </div>
-      <div class="right-col">
-        <div class="panel">
-          <h2>데이터와 직선</h2>
-          <p class="sub">점선 세로선은 각 데이터의 오차 (h − y)입니다.</p>
-          <div id="plot2d"></div>
-        </div>
-        <div class="panel">
-          <h2>비용 J 추이</h2>
-          <p class="sub">단계별 비용 (로그 눈금)</p>
-          <div id="plotloss"></div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="lower">
-      <div class="panel">
-        <h2>기울기 벡터장 −∇J(w₁, w₀)</h2>
-        <p class="sub">회색 화살표는 각 지점에서 비용이 가장 빨리 줄어드는 방향이고, 주황 화살표는 현재 위치의 −∇J입니다. 그래프를 클릭하면 클릭한 지점이 새 시작점이 됩니다.</p>
-        <div id="plotvec" role="img" aria-label="w₁, w₀ 평면의 비용 등고선과 기울기 벡터장"></div>
-        <div class="legend vec-legend">
-          <span class="k-arrow"><i></i><b>−∇J 방향</b></span>
+      <section class="panel a-vec">
+        <div class="panel-head"><div class="panel-title"><h2>기울기 벡터장 −∇J</h2><p class="sub">클릭한 지점이 새 시작점이 됩니다</p></div></div>
+        <div id="plotvec" class="plot" role="img" aria-label="w₁, w₀ 평면의 비용 등고선과 기울기 벡터장"></div>
+        <div class="legend">
+          <span class="k-arrow"><i></i><b>비용이 가장 빨리 줄어드는 방향</b></span>
           <span class="k-grad"><i></i><b>현재 위치의 −∇J</b></span>
-          <span class="k-hist"><i></i><b>지나온 경로</b></span>
-          <span class="k-pred"><i></i><b>다음 예상 경로</b></span>
-          <span class="k-opt"><i></i><b>최솟값</b></span>
         </div>
-      </div>
-      <div class="calc-wrap">
-        <div class="panel">
-          <h2>다음 단계 계산</h2>
-          <p class="sub">현재 위치에서 한 단계 진행하면 값이 아래와 같이 바뀝니다.</p>
-          <div class="calc" id="calc"></div>
-        </div>
-        <div class="panel">
-          <h2>기울기 벡터</h2>
-          <p class="sub">기울기 벡터는 ∇J = (∂J/∂w₁, ∂J/∂w₀)이고, 경사하강법은 ∇J의 반대 방향으로 η배만큼 이동합니다.</p>
-          <div class="calc" id="gvec"></div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="panel">
-      <h2>데이터별 예측과 오차</h2>
-      <div class="table-wrap"><table id="table"></table></div>
-    </section>
+      <section class="panel a-dat">
+        <div class="panel-head"><div class="panel-title"><h2>데이터와 직선</h2><p class="sub">점선은 각 데이터의 오차 (h − y)입니다</p></div></div>
+        <div id="plot2d" class="plot"></div>
+      </section>
+
+      <section class="panel a-loss">
+        <div class="panel-head"><div class="panel-title"><h2>비용 J 추이</h2><p class="sub">로그 눈금</p></div></div>
+        <div id="plotloss" class="plot"></div>
+      </section>
+
+      <section class="panel a-calc">
+        <div class="panel-head">
+          <div class="tabs" role="tablist" aria-label="계산과 데이터">
+            <button role="tab" id="tab-calc" aria-selected="true" aria-controls="pane-calc">다음 단계 계산</button>
+            <button role="tab" id="tab-data" aria-selected="false" aria-controls="pane-data" tabindex="-1">데이터별 오차</button>
+          </div>
+        </div>
+        <div class="tabpanel" id="pane-calc" role="tabpanel" aria-labelledby="tab-calc">
+          <table>
+            <thead><tr><th scope="col"><span class="sr-only">항목</span></th><th scope="col">기울기 ∂J/∂w</th><th scope="col">현재</th><th scope="col">다음 단계</th></tr></thead>
+            <tbody id="calc"></tbody>
+          </table>
+          <p class="calc-note" id="calc-note"></p>
+        </div>
+        <div class="tabpanel" id="pane-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+          <table id="table"></table>
+        </div>
+      </section>
+    </div>
   </main>
 </div>
 
@@ -618,10 +618,6 @@ tbody tr:hover { background: var(--hover); }
         visible: [true, S.showPred && pred.length > 1, true, true]
       }, [2, 3, 4, 5]);
     }
-    $('gvec').innerHTML =
-      `<div><span class="lhs">∇J</span> = (${f(g.dw, 4)}, ${f(g.db, 4)})</div>` +
-      `<div><span class="lhs">|∇J|</span> = ${g.norm.toFixed(4)}</div>` +
-      `<div><span class="lhs">이동량 −η∇J</span> = (${f(-S.eta * g.dw, 4)}, ${f(-S.eta * g.db, 4)})</div>`;
 
     // 지표
     const J = cost(S.w, S.b, d), Jn = cost(nw, nb, d), dJ = Jn - J, o = S.R.opt;
@@ -639,11 +635,13 @@ tbody tr:hover { background: var(--hover); }
 
     const e = S.eta.toFixed(3);
     $('calc').innerHTML =
-      `<div><span class="lhs">∂J/∂w₁ = Σ(h−y)·x</span> = ${f(g.dw, 4)}</div>` +
-      `<div><span class="lhs">∂J/∂w₀ = Σ(h−y)</span>&nbsp;&nbsp;&nbsp;= ${f(g.db, 4)}</div>` +
-      `<div><span class="lhs">w₁ ← w₁ − η·∂J/∂w₁</span> = ${S.w.toFixed(4)} − ${e}×(${f(g.dw, 4)}) = <span class="res">${nw.toFixed(4)}</span></div>` +
-      `<div><span class="lhs">w₀ ← w₀ − η·∂J/∂w₀</span> = ${S.b.toFixed(4)} − ${e}×(${f(g.db, 4)}) = <span class="res">${nb.toFixed(4)}</span></div>` +
-      `<div><span class="lhs">비용 변화</span> ${J.toFixed(4)} → <span class="res">${Jn.toFixed(4)}</span></div>`;
+      `<tr><th scope="row">w₁</th><td>${f(g.dw, 4)}</td><td>${S.w.toFixed(4)}</td><td class="res">${nw.toFixed(4)}</td></tr>` +
+      `<tr><th scope="row">w₀</th><td>${f(g.db, 4)}</td><td>${S.b.toFixed(4)}</td><td class="res">${nb.toFixed(4)}</td></tr>` +
+      `<tr><th scope="row">비용 J</th><td></td><td>${J.toFixed(4)}</td><td class="res">${Jn.toFixed(4)}</td></tr>`;
+    $('calc-note').innerHTML =
+      `갱신 규칙 <b>w ← w − η·∂J/∂w</b> (η = ${e})<br>` +
+      `기울기 ∂J/∂w₁ = Σ(h−y)·x, ∂J/∂w₀ = Σ(h−y)<br>` +
+      `이동량 −η∇J = <b>(${f(-S.eta * g.dw, 4)}, ${f(-S.eta * g.db, 4)})</b>`;
 
     d.x.forEach((x, i) => {
       const h = S.w * x + S.b;
@@ -655,14 +653,10 @@ tbody tr:hover { background: var(--hover); }
 
   function buildTable() {
     const d = DATA[S.key];
-    const head = '<thead><tr><th scope="col"><span class="sr-only">항목</span></th>' + d.x.map((_, i) => `<th scope="col">D${i + 1}</th>`).join('') + '</tr></thead>';
-    const row = (cls, label, cells) => `<tr class="${cls}"><th scope="row">${label}</th>${cells}</tr>`;
-    $('table').innerHTML = head + '<tbody>' +
-      row('r-x', 'x', d.x.map(v => `<td>${v}</td>`).join('')) +
-      row('r-y', 'y', d.y.map(v => `<td>${v}</td>`).join('')) +
-      row('r-h', 'h', d.x.map((_, i) => `<td id="h${i}"></td>`).join('')) +
-      row('r-e', '(h−y)²', d.x.map((_, i) => `<td id="e${i}"></td>`).join('')) +
-      '</tbody>';
+    const head = '<thead><tr><th scope="col">데이터</th><th scope="col" class="c-x">x</th><th scope="col" class="c-y">y</th>' +
+      '<th scope="col" class="c-h">예측 h</th><th scope="col">오차² (h−y)²</th></tr></thead>';
+    $('table').innerHTML = head + '<tbody>' + d.x.map((x, i) =>
+      `<tr><th scope="row">D${i + 1}</th><td>${x}</td><td>${d.y[i]}</td><td id="h${i}"></td><td id="e${i}"></td></tr>`).join('') + '</tbody>';
   }
 
   // ---------- 학습 ----------
@@ -742,6 +736,19 @@ tbody tr:hover { background: var(--hover); }
   $('btn-step').addEventListener('click', () => { if (!S.running) { stepOnce(); if (!S.done) setStatus('일시정지'); } });
   $('btn-reset').addEventListener('click', () => setStart(0, 0));
 
+  // ---------- 계산·데이터 탭 ----------
+  const tabs = [$('tab-calc'), $('tab-data')], panes = [$('pane-calc'), $('pane-data')];
+  function selectTab(k, focus) {
+    tabs.forEach((t, i) => { t.setAttribute('aria-selected', String(i === k)); t.tabIndex = i === k ? 0 : -1; panes[i].hidden = i !== k; });
+    if (focus) tabs[k].focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => selectTab(i));
+    t.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); selectTab((i + 1) % 2, true); }
+    });
+  });
+
   // ---------- 3D 보기 조작 ----------
   let camQueued = false;
   function applyCamera() {
@@ -789,6 +796,23 @@ tbody tr:hover { background: var(--hover); }
   });
 
   loadDataset('line');
+  // 패널 크기가 바뀌면(첫 배치, 창 크기, 사이드바 접기) 그래프 크기를 다시 맞춘다
+  if ('ResizeObserver' in window) {
+    const pending = new Set();
+    let raf = 0;
+    const ro = new ResizeObserver(entries => {
+      entries.forEach(en => pending.add(en.target));
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        pending.forEach(el => { if (el.data) Plotly.Plots.resize(el); });
+        if (pending.has(elVec)) vecField();
+        pending.clear();
+      });
+    });
+    [el3d, el2d, elLoss, elVec].forEach(el => ro.observe(el));
+  }
+
   el3d.on('plotly_relayout', ev => { if (ev && ev['scene.camera']) S.cam = clone(ev['scene.camera']); });
   elVec.on('plotly_click', ev => {
     const p = ev.points && ev.points[0];
