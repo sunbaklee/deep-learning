@@ -147,6 +147,19 @@ td.res { color: var(--violet); font-weight: 700; }
 .calc-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.7; }
 .calc-note b { color: var(--ink); font-weight: 600; }
 th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
+#plot2d { cursor: crosshair; }
+#table th, #table td { padding: 3px 4px; }
+#table input::-webkit-outer-spin-button, #table input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#table input { width: 50px; height: 26px; padding: 0 5px; -moz-appearance: textfield; appearance: textfield; font: inherit; font-size: 12.5px; text-align: right; color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 5px; background: var(--panel); }
+#table input:hover { border-color: var(--control); }
+#table input:focus-visible { outline: 2px solid var(--blue); outline-offset: 0; border-color: var(--blue); }
+#table button { height: 26px; padding: 0 8px; font-size: 12px; }
+#table button.del { width: 24px; padding: 0; border-color: transparent; color: var(--muted); }
+#table button.del:hover:not(:disabled) { color: var(--warn); }
+#table button.del svg { width: 14px; height: 14px; }
+#table tfoot th, #table tfoot td { border-top: 1px solid var(--rule); border-bottom: 0; padding-top: 6px; position: sticky; bottom: 0; background: var(--panel); box-shadow: 0 -1px 0 var(--rule); }
+#table tfoot th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; }
 
 /* 화면이 작으면 스크롤하는 배치로 바꾼다 */
 @media (max-width: 1100px), (max-height: 600px) {
@@ -178,7 +191,8 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
   <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-sidebar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
-  <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-minus"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></symbol>
 </svg>
 
 <header class="topbar">
@@ -192,6 +206,7 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
   <div class="seg" role="radiogroup" aria-label="데이터셋">
     <label><input type="radio" name="dataset" value="line" checked>직선형 데이터</label>
     <label><input type="radio" name="dataset" value="sin">사인형 데이터</label>
+    <label><input type="radio" name="dataset" value="custom">직접 입력</label>
   </div>
   <span class="spacer"></span>
   <div id="status" class="status" role="status">대기 중</div>
@@ -224,6 +239,7 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
       <span><kbd>Space</kbd> 시작 / 일시정지</span>
       <span><kbd>→</kbd> 한 단계 진행</span>
       <span><kbd>Shift</kbd> + 곡면 클릭: 새 시작점</span>
+      <span>데이터 그래프 클릭: 점 추가 / 삭제</span>
       <span><kbd>[</kbd> 조작 패널 접기 / 펴기</span>
     </div>
   </aside>
@@ -273,8 +289,8 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
       </section>
 
       <section class="panel a-dat">
-        <div class="panel-head"><div class="panel-title"><h2>데이터와 직선</h2><p class="sub">점선은 각 데이터의 오차 (h − y)입니다</p></div></div>
-        <div id="plot2d" class="plot"></div>
+        <div class="panel-head"><div class="panel-title"><h2>데이터와 직선</h2><p class="sub">클릭해서 점 추가·삭제</p></div></div>
+        <div id="plot2d" class="plot" title="빈 곳을 클릭하면 점이 추가되고, 점을 클릭하면 삭제됩니다. 점선은 각 데이터의 오차 (h − y)입니다."></div>
       </section>
 
       <section class="panel a-loss">
@@ -286,7 +302,7 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
         <div class="panel-head">
           <div class="tabs" role="tablist" aria-label="계산과 데이터">
             <button role="tab" id="tab-calc" aria-selected="true" aria-controls="pane-calc">다음 단계 계산</button>
-            <button role="tab" id="tab-data" aria-selected="false" aria-controls="pane-data" tabindex="-1">데이터별 오차</button>
+            <button role="tab" id="tab-data" aria-selected="false" aria-controls="pane-data" tabindex="-1">데이터 입력</button>
           </div>
         </div>
         <div class="tabpanel" id="pane-calc" role="tabpanel" aria-labelledby="tab-calc">
@@ -320,8 +336,23 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
       x: [0, 0.1111, 0.2222, 0.3333, 0.4444, 0.5556, 0.6667, 0.7778, 0.8889, 1],
       y: [-0.0834, 0.6315, 0.5576, 1.1941, -0.0167, -0.5104, -0.7654, -1.2339, -0.8544, -0.1818],
       xr: [-0.2, 1.2], yr: [-1.6, 1.6]
-    }
+    },
+    custom: null   // 직접 입력한 데이터. 처음 고를 때 보던 데이터를 복사해서 만든다
   };
+  const MAX_POINTS = 40;
+  const round2 = v => Math.round(v * 100) / 100;
+  // 직접 입력 데이터의 그래프 범위: 기본 [-1, 1]에 데이터가 모두 들어가도록 넓힌다
+  function fitRange(d) {
+    const pad = (lo, hi) => Math.max(0.2, (hi - lo) * 0.12);
+    const xlo = Math.min(...d.x), xhi = Math.max(...d.x), ylo = Math.min(...d.y), yhi = Math.max(...d.y);
+    const px = pad(xlo, xhi), py = pad(ylo, yhi);
+    d.xr = [round2(Math.min(-1, xlo - px)), round2(Math.max(1, xhi + px))];
+    d.yr = [round2(Math.min(-1, ylo - py)), round2(Math.max(1, yhi + py))];
+    return d;
+  }
+  const distinctX = xs => new Set(xs).size;
+  // D1, D2처럼 숫자로 끝나는 이름 뒤의 목적격 조사 (일·삼·육·칠·팔·십 → 을, 이·사·오·구 → 를)
+  const eul = n => [2, 4, 5, 9].includes(n % 10) ? '를' : '을';
 
   // ---------- 수학 ----------
   const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
@@ -448,13 +479,16 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
     const ax2 = (title, range) => ({ title: { text: title, standoff: 6 }, range, gridcolor: C.rule, zerolinecolor: C.muted, color: C.muted, linecolor: C.rule });
     Plotly.react(el2d, [
       { x: [], y: [], mode: 'lines', name: '오차', line: { color: C.muted, width: 1, dash: 'dot' }, hoverinfo: 'skip' },
-      { x: d.x, y: d.y, mode: 'markers', type: 'scatter', name: '데이터 y', marker: { color: C.orange, size: 8 } },
-      { x: d.xr, y: [], mode: 'lines', name: '현재 직선 h', line: { color: C.blue, width: 3 } },
-      { x: d.xr, y: [], mode: 'lines', name: '다음 단계', line: { color: C.violet, width: 2, dash: 'dash' } }
+      { x: d.x, y: d.y, mode: 'markers', type: 'scatter', name: '데이터 y', marker: { color: C.orange, size: 9 },
+        text: d.x.map((_, i) => 'D' + (i + 1)),
+        hovertemplate: '%{text}<br>x %{x}<br>y %{y}<extra>클릭하면 삭제</extra>' },
+      { x: d.xr, y: [], mode: 'lines', name: '현재 직선 h', line: { color: C.blue, width: 3 }, hoverinfo: 'skip' },
+      { x: d.xr, y: [], mode: 'lines', name: '다음 단계', line: { color: C.violet, width: 2, dash: 'dash' }, hoverinfo: 'skip' }
     ], {
       margin: { l: 40, r: 8, t: 4, b: 34 }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-      font: FONT, uirevision: S.key, xaxis: ax2('x', d.xr), yaxis: ax2('y', d.yr),
-      legend: { orientation: 'h', x: 0, y: 1.02, yanchor: 'bottom', font: { size: 11, color: C.muted } }
+      font: FONT, uirevision: S.key, dragmode: false, hovermode: 'closest',
+      xaxis: Object.assign(ax2('x', d.xr), { fixedrange: true }), yaxis: Object.assign(ax2('y', d.yr), { fixedrange: true }),
+      legend: { orientation: 'h', x: 0, y: 1.02, yanchor: 'bottom', font: { size: 11, color: C.muted }, itemclick: false, itemdoubleclick: false }
     }, CONFIG);
 
     // 기울기 벡터장: 등고선 + 화살표
@@ -653,10 +687,94 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
 
   function buildTable() {
     const d = DATA[S.key];
-    const head = '<thead><tr><th scope="col">데이터</th><th scope="col" class="c-x">x</th><th scope="col" class="c-y">y</th>' +
-      '<th scope="col" class="c-h">예측 h</th><th scope="col">오차² (h−y)²</th></tr></thead>';
+    // 다시 그린 뒤에도 입력 중이던 칸에 포커스를 돌려준다
+    const a = document.activeElement, keep = a && a.closest && a.closest('#table') ? a.dataset.focus : null;
+    const canDel = d.x.length > 2;
+    const head = '<thead><tr><th scope="col">점</th><th scope="col" class="c-x">x</th><th scope="col" class="c-y">y</th>' +
+      '<th scope="col" class="c-h">예측 h</th><th scope="col">(h−y)²</th><th scope="col"><span class="sr-only">삭제</span></th></tr></thead>';
+    const num = (k, i, v) => `<input type="number" step="0.01" inputmode="decimal" data-k="${k}" data-i="${i}" data-focus="${k}${i}" value="${v}" aria-label="D${i + 1}의 ${k}">`;
     $('table').innerHTML = head + '<tbody>' + d.x.map((x, i) =>
-      `<tr><th scope="row">D${i + 1}</th><td>${x}</td><td>${d.y[i]}</td><td id="h${i}"></td><td id="e${i}"></td></tr>`).join('') + '</tbody>';
+      `<tr><th scope="row">D${i + 1}</th><td>${num('x', i, x)}</td><td>${num('y', i, d.y[i])}</td><td id="h${i}"></td><td id="e${i}"></td>` +
+      `<td><button class="del" data-del="${i}" data-focus="del${i}" aria-label="D${i + 1} 삭제" title="D${i + 1} 삭제"${canDel ? '' : ' disabled'}><svg><use href="#i-x"/></svg></button></td></tr>`).join('') +
+      '</tbody><tfoot><tr><th scope="row">새 점</th>' +
+      `<td><input type="number" step="0.01" inputmode="decimal" id="new-x" data-focus="new-x" placeholder="x" aria-label="새 점의 x"></td>` +
+      `<td><input type="number" step="0.01" inputmode="decimal" id="new-y" data-focus="new-y" placeholder="y" aria-label="새 점의 y"></td>` +
+      `<td colspan="3"><button id="btn-add" data-focus="btn-add"${d.x.length >= MAX_POINTS ? ' disabled' : ''}><svg><use href="#i-plus"/></svg>추가</button></td></tr></tfoot>`;
+    if (keep) { const t = $('table').querySelector(`[data-focus="${keep}"]`); if (t && !t.disabled) t.focus(); }
+  }
+
+  // ---------- 데이터 편집 ----------
+  // 기본 데이터를 고친 경우에는 그 데이터를 복사한 '직접 입력' 데이터로 바꿔서 고친다
+  function editable() {
+    if (S.key !== 'custom') {
+      const src = DATA[S.key];
+      DATA.custom = { x: src.x.slice(), y: src.y.slice() };
+      S.key = 'custom';
+      document.querySelector('input[name=dataset][value=custom]').checked = true;
+    }
+    return DATA.custom;
+  }
+  // 데이터가 바뀌면 비용 함수가 바뀌므로, 곡면을 다시 계산하고 처음 시작점에서 학습을 다시 시작한다
+  function applyData(msg) {
+    const d = fitRange(DATA.custom), w0 = S.hist[0][0], b0 = S.hist[0][1];
+    pause(true);
+    S.R = surfaceRange(d);
+    for (const [id, r] of [['w1', S.R.w], ['w0', S.R.b]]) { const el = $(id); el.min = r[0]; el.max = r[1]; el.step = 0.001; }
+    const clamp = (v, r) => Math.min(r[1], Math.max(r[0], v));
+    S.w = clamp(w0, S.R.w); S.b = clamp(b0, S.R.b);
+    S.hist = [[S.w, S.b]]; S.histStart = 0; S.step = 0; S.done = null;
+    buildTable();
+    renderAll();
+    setStatus(msg || '대기 중');
+  }
+  function addPoint(x, y) {
+    if (!isFinite(x) || !isFinite(y)) { setStatus('x와 y에 숫자를 입력하십시오', 'warn'); return false; }
+    if (Math.abs(x) > 100 || Math.abs(y) > 100) { setStatus('x와 y는 −100부터 100 사이의 값으로 입력하십시오', 'warn'); return false; }
+    const d = editable();
+    if (d.x.length >= MAX_POINTS) { setStatus(`점은 최대 ${MAX_POINTS}개까지 추가할 수 있습니다`, 'warn'); return false; }
+    d.x.push(round2(x)); d.y.push(round2(y));
+    applyData(`D${d.x.length} (${round2(x)}, ${round2(y)})${eul(d.x.length)} 추가했습니다`);
+    return true;
+  }
+  function removePoint(i) {
+    const cur = DATA[S.key];
+    const xs = cur.x.filter((_, k) => k !== i);
+    // 기울기와 절편을 정하려면 x값이 서로 다른 점이 2개 이상 있어야 한다
+    if (distinctX(xs) < 2) { setStatus('x값이 서로 다른 점이 2개 이상 있어야 합니다', 'warn'); return; }
+    const d = editable();
+    d.x.splice(i, 1); d.y.splice(i, 1);
+    applyData(`D${i + 1}${eul(i + 1)} 삭제했습니다`);
+  }
+  function editPoint(i, k, v) {
+    const cur = DATA[S.key];
+    if (!isFinite(v) || Math.abs(v) > 100) { setStatus('−100부터 100 사이의 숫자를 입력하십시오', 'warn'); buildTable(); draw(); return; }
+    if (k === 'x') {
+      const xs = cur.x.slice(); xs[i] = round2(v);
+      if (distinctX(xs) < 2) { setStatus('x값이 서로 다른 점이 2개 이상 있어야 합니다', 'warn'); buildTable(); draw(); return; }
+    }
+    const d = editable();
+    d[k][i] = round2(v);
+    applyData(`D${i + 1}의 ${k} 값을 바꿨습니다`);
+  }
+
+  $('table').addEventListener('change', e => {
+    const t = e.target;
+    if (t.dataset.k) editPoint(+t.dataset.i, t.dataset.k, parseFloat(t.value));
+  });
+  $('table').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.del != null) removePoint(+b.dataset.del);
+    else if (b.id === 'btn-add') submitNew();
+  });
+  $('table').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.target.id === 'new-x' || e.target.id === 'new-y')) { e.preventDefault(); submitNew(); }
+  });
+  function submitNew() {
+    const nx = $('new-x'), ny = $('new-y');
+    if (nx.value === '' ) { nx.focus(); return; }
+    if (ny.value === '') { ny.focus(); return; }
+    if (addPoint(parseFloat(nx.value), parseFloat(ny.value))) $('new-x').focus();
   }
 
   // ---------- 학습 ----------
@@ -705,6 +823,7 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
 
   function loadDataset(key) {
     pause(true);
+    if (key === 'custom' && !DATA.custom) { const src = DATA[S.key]; DATA.custom = fitRange({ x: src.x.slice(), y: src.y.slice() }); }
     S.key = key;
     S.R = surfaceRange(DATA[key]);
     for (const [id, r] of [['w1', S.R.w], ['w0', S.R.b]]) { const el = $(id); el.min = r[0]; el.max = r[1]; el.step = 0.001; }
@@ -812,6 +931,23 @@ th.c-x, th.c-y { color: var(--orange-text); } th.c-h { color: var(--blue); }
     });
     [el3d, el2d, elLoss, elVec].forEach(el => ro.observe(el));
   }
+
+  // 데이터 그래프: 점을 클릭하면 삭제하고, 빈 곳을 클릭하면 그 좌표에 점을 추가한다
+  let pointHit = false;
+  el2d.on('plotly_click', ev => {
+    const p = ev.points && ev.points[0];
+    if (p && p.curveNumber === 1) { pointHit = true; removePoint(p.pointNumber); }
+  });
+  el2d.addEventListener('click', e => {
+    setTimeout(() => {
+      if (pointHit) { pointHit = false; return; }
+      const fl = el2d._fullLayout; if (!fl) return;
+      const r = el2d.getBoundingClientRect(), xa = fl.xaxis, ya = fl.yaxis;
+      const px = e.clientX - r.left - xa._offset, py = e.clientY - r.top - ya._offset;
+      if (px < 0 || py < 0 || px > xa._length || py > ya._length) return;
+      addPoint(xa.p2c(px), ya.p2c(py));
+    }, 0);
+  });
 
   el3d.on('plotly_relayout', ev => { if (ev && ev['scene.camera']) S.cam = clone(ev['scene.camera']); });
   elVec.on('plotly_click', ev => {
