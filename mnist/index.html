@@ -186,12 +186,12 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
 </svg>
 
 <header class="topbar">
-  <a class="btn ghost" href="../" aria-label="선형회귀 대시보드로 돌아가기"><svg><use href="#i-back"/></svg>선형회귀</a>
+  <a class="btn ghost" href="../" aria-label="딥러닝 실습 메인으로"><svg><use href="#i-back"/></svg>딥러닝 실습</a>
   <h1>MNIST 숫자 인식</h1>
   <span class="meta" id="meta">784 → 128 → 10 완전연결 신경망</span>
   <span class="spacer"></span>
-  <a class="btn" id="run-link" href="https://github.com/sunbaklee/linreg3d/actions" target="_blank" rel="noopener"><svg><use href="#i-run"/></svg>학습 기록</a>
-  <a class="btn" href="https://github.com/sunbaklee/linreg3d/blob/main/mnist/mnist_mlp.py" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>파이썬 코드</a>
+  <a class="btn" id="run-link" href="https://github.com/sunbaklee/deep-learning/actions" target="_blank" rel="noopener"><svg><use href="#i-run"/></svg>학습 기록</a>
+  <a class="btn" href="https://github.com/sunbaklee/deep-learning/blob/main/mnist/mnist_mlp.py" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>파이썬 코드</a>
 </header>
 
 <main class="main" id="app">
@@ -573,7 +573,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     const when = R.run.trained_at ? new Date(R.run.trained_at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
     $('meta').textContent = `784 → ${cfg.hidden} → 10 · TensorFlow ${R.run.tensorflow}` + (when ? ` · ${when} 학습` : '');
     if (R.run.run_url) $('run-link').href = R.run.run_url;
-    $('foot').innerHTML = `이 페이지의 결과와 가중치는 GitHub Actions가 <a href="https://github.com/sunbaklee/linreg3d/blob/main/mnist/mnist_mlp.py">mnist_mlp.py</a>를 실행해 만든 거예요.` +
+    $('foot').innerHTML = `이 페이지의 결과와 가중치는 GitHub Actions가 <a href="https://github.com/sunbaklee/deep-learning/blob/main/mnist/mnist_mlp.py">mnist_mlp.py</a>를 실행해 만든 거예요.` +
       (R.run.commit ? ` 커밋 <code>${R.run.commit}</code>.` : '');
 
     $('m-acc').textContent = pct(T.accuracy);
