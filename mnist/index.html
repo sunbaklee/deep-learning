@@ -160,6 +160,21 @@ tbody tr:last-child td { border-bottom: 0; }
 footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(--muted); font-size: 12.5px; }
 
 
+/* ---------- 모델 선택 ---------- */
+.pick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pick .lbl { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 8px; background: var(--hover); border: 1px solid var(--rule); }
+.seg button { height: 34px; padding: 0 12px; border: 0; border-radius: 5px; background: transparent; color: var(--muted);
+  font: 700 13px/1 var(--sans); display: inline-flex; align-items: baseline; gap: 6px; cursor: pointer; }
+.seg button small { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.seg button[aria-checked="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(23,33,43,.12); }
+.seg button[aria-checked="true"] small { color: var(--ok); }
+.seg button:hover:not([aria-checked="true"]):not(:disabled) { color: var(--ink); }
+.seg button:disabled { cursor: progress; opacity: .6; }
+.others { margin: 0; font-size: 12.5px; color: var(--muted); min-height: 20px; }
+.others b { color: var(--ink); }
+.others .diff { color: var(--warn); }
+
 /* ---------- 입력 비틀기 ---------- */
 .warp { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); display: grid; gap: 12px; }
 .warp-head { display: flex; align-items: flex-start; gap: 12px; }
@@ -298,7 +313,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
           <div class="result-head">
             <div class="big-digit empty" id="big">?</div>
             <div>
-              <div class="label">예측</div>
+              <div class="label" id="pred-label">예측</div>
               <div class="conf" id="conf" aria-live="polite">숫자를 써 주십시오</div>
             </div>
             <div class="seen">
@@ -306,6 +321,11 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
               <span>모델이 보는 28×28 입력</span>
             </div>
           </div>
+          <div class="pick">
+            <span class="lbl" id="pick-l">은닉층 뉴런 수</span>
+            <div class="seg" id="model-seg" role="radiogroup" aria-labelledby="pick-l"></div>
+          </div>
+          <p class="others" id="others"></p>
           <div class="bars" id="draw-bars"></div>
         </div>
       </div>
@@ -583,10 +603,23 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
   }
 
   // ---------- 직접 써 보기: 전처리와 순전파 ----------
-  function setupPad(W) {
-    const [nIn, nHid, nOut] = W.shape;
-    const W1 = Float32Array.from(W.W1), b1 = Float32Array.from(W.b1);
-    const W2 = Float32Array.from(W.W2), b2 = Float32Array.from(W.b2);
+  // ---------- 모델 가중치 불러오기 ----------
+  // weights_<h>.bin: float32로 W1(784×h), b1(h), W2(h×10), b2(10)을 이어 붙인 파일
+  function parseModel(buf, hidden) {
+    const a = new Float32Array(buf), nIn = 784, nOut = 10;
+    let o = 0;
+    const take = n => { const v = a.subarray(o, o + n); o += n; return v; };
+    const W1 = take(nIn * hidden), b1 = take(hidden), W2 = take(hidden * nOut), b2 = take(nOut);
+    if (o !== a.length) throw new Error('weights size');
+    return { hidden, nIn, nHid: hidden, nOut, W1, b1, W2, b2 };
+  }
+  const loadModel = (info) => fetch('data/' + info.file).then(r => { if (!r.ok) throw new Error(info.file); return r.arrayBuffer(); })
+    .then(buf => Object.assign(parseModel(buf, info.hidden), { accuracy: info.accuracy }));
+
+  function setupPad(R, first) {
+    const infos = (R.models || []).slice().sort((a, b) => a.hidden - b.hidden);
+    const models = new Map([[first.hidden, first]]);
+    let M = first;
     const pad = $('pad'), ctx = pad.getContext('2d');
     const seen = $('seen'), sctx = seen.getContext('2d');
     const tmp = document.createElement('canvas'); tmp.width = tmp.height = 28;
@@ -631,7 +664,8 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
       return x;
     }
 
-    function predict(x) {
+    function predictWith(m, x) {
+      const { nIn, nHid, nOut, W1, b1, W2, b2 } = m;
       const h = new Float32Array(nHid);
       for (let j = 0; j < nHid; j++) h[j] = b1[j];
       for (let i = 0; i < nIn; i++) {
@@ -646,6 +680,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
       const mx = Math.max(...z), e = Array.from(z, v => Math.exp(v - mx)), sum = e.reduce((a, b) => a + b, 0);
       return { p: e.map(v => v / sum), h };                             // Softmax
     }
+    const predict = x => predictWith(M, x);
 
     // ---------- 입력 비틀기: 이동·회전·크기·노이즈 ----------
     const T = { tx: 0, ty: 0, rot: 0, sc: 100, nz: 0 };
@@ -714,8 +749,47 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
       const r = predict(x), p = r.p, top = renderBars(bars, p);
       $('big').textContent = top; $('big').classList.remove('empty');
       $('conf').textContent = `${top} (${pct(p[top], 1)})`;
+      // 같은 입력에 대한 다른 모델의 예측
+      const rest = infos.filter(i => i.hidden !== M.hidden && models.has(i.hidden)).map(i => {
+        const q = predictWith(models.get(i.hidden), x).p, t = argmax(q);
+        return `${i.hidden}개 → <b${t !== top ? ' class="diff"' : ''}>${t}</b> (${pct(q[t], 1)})`;
+      });
+      $('others').innerHTML = rest.length ? '다른 모델의 예측: ' + rest.join(' · ') : '';
       shiftChart(base);
     }
+
+    // ---------- 은닉층 뉴런 수 선택 ----------
+    const seg = $('model-seg');
+    function pickLabel() { $('pred-label').textContent = `예측 · 은닉층 ${M.hidden}개 모델`; }
+    function drawSeg() {
+      seg.innerHTML = infos.map(i =>
+        `<button type="button" role="radio" data-h="${i.hidden}" aria-checked="${i.hidden === M.hidden}"${models.has(i.hidden) ? '' : ' disabled'}>` +
+        `${i.hidden}개<small>${models.has(i.hidden) ? pct(i.accuracy, 1) : '불러오는 중'}</small></button>`).join('');
+    }
+    function select(h) {
+      if (!models.has(h) || h === M.hidden) return;
+      M = models.get(h);
+      drawSeg(); pickLabel();
+      seg.querySelector(`[data-h="${h}"]`).focus();
+      refreshAll();
+    }
+    seg.addEventListener('click', e => { const b = e.target.closest('button[data-h]'); if (b) select(+b.dataset.h); });
+    seg.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const ready = infos.filter(i => models.has(i.hidden)), k = ready.findIndex(i => i.hidden === M.hidden);
+      select(ready[(k + (e.key === 'ArrowRight' ? 1 : ready.length - 1)) % ready.length].hidden);
+    });
+    if (infos.length > 1) {
+      drawSeg();
+      // 나머지 모델은 화면을 띄운 뒤에 내려받는다
+      infos.filter(i => !models.has(i.hidden)).forEach(i => loadModel(i)
+        .then(m => { models.set(i.hidden, m); drawSeg(); refreshAll(); })
+        .catch(() => { const b = seg.querySelector(`[data-h="${i.hidden}"] small`); if (b) b.textContent = '불러오지 못함'; }));
+    } else {
+      seg.parentElement.hidden = true;
+    }
+    pickLabel();
 
     const WARP = [['tx', v => (v > 0 ? '+' : '') + v + 'px'], ['ty', v => (v > 0 ? '+' : '') + v + 'px'],
                   ['rot', v => (v > 0 ? '+' : '') + v + '°'], ['sc', v => v + '%'], ['nz', v => v + '%']];
@@ -943,12 +1017,17 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
     [...wrong.children].forEach((t, i) => paint(t.querySelector('canvas'), R.wrong[i].image));
     $('wrong-sub').textContent = `테스트 10,000장 중 ${fmt(T.total - T.correct)}장을 틀렸습니다. 아래는 그중 앞쪽 ${R.wrong.length}장입니다.`;
 
-    setupPad(W);
+    setupPad(R, W);
     setupQuiz(R);
   }
 
-  Promise.all(['data/results.json', 'data/weights.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })))
-    .then(([R, W]) => render(R, W))
+  // 결과를 읽은 뒤, 이 페이지의 기본 모델(은닉층 R.config.hidden개) 가중치를 먼저 불러온다
+  fetch('data/results.json').then(r => { if (!r.ok) throw new Error('results'); return r.json(); })
+    .then(R => {
+      const info = (R.models || []).find(m => m.hidden === R.config.hidden);
+      if (!info) throw new Error('models');
+      return loadModel(info).then(m => render(R, m));
+    })
     .catch(() => {
       const s = $('state');
       s.classList.add('err');

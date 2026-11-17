@@ -51,8 +51,8 @@ def compare_entry(hidden, model, history, train_seconds, test_loss, test_acc, to
 
 
 def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_acc,
-           X_test, y_test, train0_image, train0_label, compare) -> None:
-    """사이트가 읽는 결과(results.json)와 학습된 가중치(weights.json)를 저장한다."""
+           X_test, y_test, train0_image, train0_label, compare, trained) -> None:
+    """사이트가 읽는 결과(results.json)와 모델별 가중치(weights_<은닉층 뉴런 수>.bin)를 저장한다."""
     os.makedirs(out_dir, exist_ok=True)
 
     probs = model.predict(X_test, verbose=0)
@@ -105,16 +105,19 @@ def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_
         "confusion": confusion.tolist(),
         "compare": compare,
         "quiz": quiz,
+        # 손글씨 입력에서 고를 수 있는 모델과 가중치 파일
+        "models": [{"hidden": c["hidden"], "file": f"weights_{c['hidden']}.bin", "accuracy": c["test"]["accuracy"]}
+                   for c in compare if c["hidden"] in trained],
     }
     with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, separators=(",", ":"))
 
-    (W1, b1), (W2, b2) = model.layers[0].get_weights(), model.layers[1].get_weights()
-    weights = {"shape": [784, args.hidden, 10],
-               "W1": np.round(W1.ravel(), 4).tolist(), "b1": np.round(b1, 4).tolist(),
-               "W2": np.round(W2.ravel(), 4).tolist(), "b2": np.round(b2, 4).tolist()}
-    with open(os.path.join(out_dir, "weights.json"), "w", encoding="utf-8") as f:
-        json.dump(weights, f, separators=(",", ":"))
+    # 가중치는 float32 리틀엔디언으로 W1(784×h), b1(h), W2(h×10), b2(10) 순서로 이어 붙인다.
+    # JSON보다 훨씬 작고, 브라우저에서 Float32Array로 바로 읽을 수 있다.
+    for hidden, m in trained.items():
+        (W1, b1), (W2, b2) = m.layers[0].get_weights(), m.layers[1].get_weights()
+        blob = np.concatenate([W1.ravel(), b1, W2.ravel(), b2]).astype("<f4")
+        blob.tofile(os.path.join(out_dir, f"weights_{hidden}.bin"))
 
 
 def main() -> int:
@@ -191,6 +194,7 @@ def main() -> int:
 
     # ---------- 6. 은닉층 크기 비교 ----------
     compare = [compare_entry(args.hidden, model, history, train_seconds, test_loss, test_acc, len(y_test))]
+    trained = {args.hidden: model}
     sizes = sorted({int(v) for v in args.compare.split(",") if v.strip()} - {args.hidden})
     if sizes:
         section("6. 은닉층 크기 비교")
@@ -206,6 +210,7 @@ def main() -> int:
             loss_c, acc_c = m.evaluate(X_test, Y_test, verbose=0)
             print(f"테스트 정확도 {acc_c:.4f}, 테스트 손실 {loss_c:.4f}, 학습 {sec:.1f}초")
             compare.append(compare_entry(hidden, m, h, sec, loss_c, acc_c, len(y_test)))
+            trained[hidden] = m
         compare.sort(key=lambda c: c["hidden"])
         print("\n은닉층 | 파라미터 | 테스트 정확도 | 테스트 손실 | 학습 시간")
         for c in compare:
@@ -214,7 +219,7 @@ def main() -> int:
 
     if args.export:
         export(args.export, args, model, history, train_seconds, steps, test_loss, test_acc,
-               X_test, y_test, train0_image, train0_label, compare)
+               X_test, y_test, train0_image, train0_label, compare, trained)
         print(f"\n사이트용 결과를 {args.export}/ 폴더에 저장했습니다.")
 
     # GitHub Actions에서 실행하면 결과를 실행 요약 화면에 표시한다
