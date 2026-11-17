@@ -159,6 +159,83 @@ tbody tr:last-child td { border-bottom: 0; }
 .state.err { color: var(--warn); }
 footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(--muted); font-size: 12.5px; }
 
+
+/* ---------- 입력 비틀기 ---------- */
+.warp { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); display: grid; gap: 12px; }
+.warp-head { display: flex; align-items: flex-start; gap: 12px; }
+.warp-head h3 { margin: 0; font-size: 14px; }
+.warp-head .btn { margin-left: auto; height: 30px; font-size: 12.5px; }
+.warp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 18px; }
+.ctl-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 600; }
+.ctl-row output { color: var(--blue); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: var(--blue); cursor: pointer; }
+.shift h3 { margin: 0 0 2px; }
+#shift-svg { width: 100%; height: 120px; display: block; overflow: visible; }
+#shift-svg text { font: 11px var(--sans); fill: var(--muted); }
+#shift-svg text.lab { font-weight: 700; fill: var(--warn); }
+.shift .cap { margin-top: 2px; font-size: 12.5px; color: var(--ink); }
+
+/* ---------- 은닉층 뉴런 ---------- */
+.hid-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.hid-head > div:first-child { flex: 1; min-width: 280px; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.keys span { display: inline-flex; align-items: center; gap: 6px; }
+.keys i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.keys .k-pos { background: var(--blue); } .keys .k-neg { background: var(--orange); }
+.keys .k-off { background: var(--panel); border: 1px solid var(--rule); opacity: .5; }
+.keys .k-top { background: var(--panel); box-shadow: inset 0 0 0 2px var(--orange); }
+.hid-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; margin-top: 14px; align-items: start; }
+.hid-grid { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 5px; }
+.neu { position: relative; padding: 2px 2px 5px; border: 1px solid var(--rule); border-radius: 5px; background: var(--panel); cursor: pointer;
+  display: grid; gap: 3px; transition: opacity .15s ease-out; font: inherit; }
+.neu canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; border-radius: 2px; }
+.neu i { display: block; height: 3px; border-radius: 2px; background: var(--hover); position: relative; overflow: hidden; }
+.neu i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--a, 0%); background: var(--blue); border-radius: 2px; }
+.neu.off { opacity: .32; }
+.neu.top { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+.neu[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); opacity: 1; }
+.neu:hover { opacity: 1; }
+.hid-detail { display: grid; gap: 12px; position: sticky; top: 76px; }
+.hid-detail h3 { margin: 0; font-size: 14px; }
+.hd-imgs { display: flex; gap: 12px; }
+.hd-imgs figure { margin: 0; }
+.hd-imgs canvas { width: 136px; height: 136px; image-rendering: pixelated; border: 1px solid var(--rule); border-radius: 4px; display: block; }
+.hd-imgs figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.hd-stats { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border: 1px solid var(--rule); border-radius: 8px; }
+.hd-stats div { padding: 8px 12px; } .hd-stats div + div { border-left: 1px solid var(--rule); }
+.hd-stats dt { font-size: 12px; color: var(--muted); font-weight: 600; }
+.hd-stats dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.vote { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.vote div { display: grid; gap: 3px; justify-items: center; font-size: 12px; font-weight: 600; color: var(--muted); }
+.vote .vb { position: relative; width: 100%; height: 64px; background: var(--hover); border-radius: 3px; }
+.vote .vb::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--control); }
+.vote .vb b { position: absolute; left: 20%; right: 20%; border-radius: 2px; }
+.vote .vb b.pos { bottom: 50%; background: var(--blue); } .vote .vb b.neg { top: 50%; background: var(--orange); }
+.vote div.cur { color: var(--ink); } .vote div.cur .vb { box-shadow: inset 0 0 0 1px var(--ink); }
+.hid-detail .note { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+/* ---------- 은닉층 크기 비교 ---------- */
+.cmp-body { display: grid; gap: 18px; margin-top: 14px; }
+.cmp-table { max-width: 860px; }
+.cmp-table td .accbar { display: inline-block; vertical-align: middle; width: 72px; height: 8px; margin-left: 8px; background: var(--hover); border-radius: 4px; overflow: hidden; }
+.cmp-table td .accbar i { display: block; height: 100%; border-radius: 4px; }
+.cmp-table tr.is-main td { font-weight: 700; }
+.cmp-table .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 0; }
+.cmp-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+.cmp-charts .legend { grid-column: 1 / -1; }
+.cmp-charts .legend i { border-top-width: 3px; }
+.cmp-note { margin: 14px 0 0; font-size: 13.5px; }
+
+@media (max-width: 1100px) {
+  .hid-body, .cmp-body { grid-template-columns: 1fr; }
+  .hid-detail { position: static; }
+  .hid-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .hid-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .cmp-charts { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1100px) {
   .row.play, .step { grid-template-columns: 1fr; }
   .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -239,6 +316,24 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
           <div class="bars" id="draw-bars"></div>
         </div>
       </div>
+      <div class="warp">
+        <div class="warp-head">
+          <div><h3>입력 비틀기</h3><p class="sub">직접 쓴 숫자를 옮기거나 돌리거나 노이즈를 더하면, 예측이 어떻게 바뀌는지 바로 확인할 수 있습니다.</p></div>
+          <button class="btn" id="warp-reset" type="button">원래대로</button>
+        </div>
+        <div class="warp-grid">
+          <div><div class="ctl-row"><label for="w-tx">가로 이동</label><output id="w-tx-out"></output></div><input type="range" id="w-tx" min="-8" max="8" step="1" value="0"></div>
+          <div><div class="ctl-row"><label for="w-ty">세로 이동</label><output id="w-ty-out"></output></div><input type="range" id="w-ty" min="-8" max="8" step="1" value="0"></div>
+          <div><div class="ctl-row"><label for="w-rot">회전</label><output id="w-rot-out"></output></div><input type="range" id="w-rot" min="-90" max="90" step="5" value="0"></div>
+          <div><div class="ctl-row"><label for="w-sc">크기</label><output id="w-sc-out"></output></div><input type="range" id="w-sc" min="40" max="140" step="5" value="100"></div>
+          <div><div class="ctl-row"><label for="w-nz">노이즈</label><output id="w-nz-out"></output></div><input type="range" id="w-nz" min="0" max="80" step="5" value="0"></div>
+        </div>
+        <div class="shift">
+          <h3>가로로 옮길 때의 예측 확률</h3>
+          <svg id="shift-svg" role="img" aria-label="가로 이동 거리에 따른 예측 확률 그래프"></svg>
+          <p class="cap" id="shift-cap"></p>
+        </div>
+      </div>
     </div>
     <div class="panel">
       <h2>학습 곡선</h2>
@@ -248,6 +343,59 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
         <div class="chart"><h3>정확도</h3><svg id="c-acc" role="img" aria-label="에폭별 정확도 그래프"></svg></div>
         <div class="chart"><h3>손실 (범주형 교차 엔트로피)</h3><svg id="c-loss" role="img" aria-label="에폭별 손실 그래프"></svg></div>
       </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="hid-h">
+    <div class="hid-head">
+      <div>
+        <h2 id="hid-h">은닉층 뉴런 <span id="hid-n">128</span>개</h2>
+        <p class="sub">칸 하나가 은닉층 뉴런 하나입니다. 그림은 그 뉴런이 입력 픽셀 784개에 곱하는 가중치를 28×28로 배치한 것이고, 아래 막대는 지금 입력에 대한 활성값입니다. 위에서 숫자를 쓰면 함께 바뀝니다.</p>
+      </div>
+      <div class="keys" aria-hidden="true">
+        <span><i class="k-pos"></i>+ 가중치</span><span><i class="k-neg"></i>− 가중치</span>
+        <span><i class="k-off"></i>꺼진 뉴런 (ReLU 출력 0)</span><span><i class="k-top"></i>예측에 가장 크게 기여한 5개</span>
+      </div>
+    </div>
+    <div class="hid-body">
+      <div class="hid-grid" id="hid-grid" aria-label="은닉층 뉴런 목록"></div>
+      <div class="hid-detail" aria-live="polite">
+        <h3 id="hd-title"></h3>
+        <div class="hd-imgs">
+          <figure><canvas id="hd-w" width="28" height="28" aria-hidden="true"></canvas><figcaption>가중치</figcaption></figure>
+          <figure><canvas id="hd-c" width="28" height="28" aria-hidden="true"></canvas><figcaption>입력 × 가중치</figcaption></figure>
+        </div>
+        <dl class="hd-stats">
+          <div><dt>활성값 h</dt><dd id="hd-h">—</dd></div>
+          <div><dt id="hd-contrib-l">예측에 대한 기여</dt><dd id="hd-contrib">—</dd></div>
+        </dl>
+        <div>
+          <h3 style="margin-bottom:6px">출력층 숫자 0~9로 가는 가중치</h3>
+          <div class="vote" id="hd-vote"></div>
+        </div>
+        <p class="note">파란 칸에 획이 지나가면 활성값이 커지고, 주황 칸에 획이 지나가면 작아집니다. 활성값에 출력층 가중치를 곱한 값이 그 숫자의 점수에 더해집니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="cmp-h">
+    <h2 id="cmp-h">은닉층 크기별 비교</h2>
+    <p class="sub">은닉층 뉴런 수만 바꾸고 나머지 설정(에폭, 배치 크기, 검증 비율, 시드)은 그대로 두고 GitHub Actions에서 함께 학습한 모델들입니다.</p>
+    <div id="cmp-wrap">
+      <div class="cmp-body">
+        <div class="scroll-x">
+          <table class="cmp-table">
+            <thead><tr><th>은닉층 뉴런</th><th class="num">파라미터</th><th>테스트 정확도</th><th class="num">틀린 이미지</th><th class="num">테스트 손실</th><th class="num">학습 시간</th></tr></thead>
+            <tbody id="cmp-rows"></tbody>
+          </table>
+        </div>
+        <div class="cmp-charts">
+          <div class="legend" id="cmp-legend"></div>
+          <div class="chart"><h3>검증 정확도</h3><svg id="cmp-acc" role="img" aria-label="은닉층 크기별 에폭당 검증 정확도"></svg></div>
+          <div class="chart"><h3>검증 손실</h3><svg id="cmp-loss" role="img" aria-label="은닉층 크기별 에폭당 검증 손실"></svg></div>
+        </div>
+      </div>
+      <p class="cmp-note" id="cmp-note"></p>
     </div>
   </section>
 
@@ -478,7 +626,11 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     const tctx = tmp.getContext('2d');
     const bars = $('draw-bars');
 
+    let base = null;                               // 20×20 맞춤과 가운데 정렬까지 끝낸 입력 (비틀기 전)
     function reset() {
+      base = null;
+      updateHidden(null);
+      shiftChart(null);
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 280, 280);
       sctx.fillStyle = '#000'; sctx.fillRect(0, 0, 28, 28);
       renderBars(bars, new Array(10).fill(0));
@@ -526,21 +678,165 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
       for (let k = 0; k < nOut; k++) z[k] = b2[k];
       for (let j = 0; j < nHid; j++) { const hj = h[j]; if (!hj) continue; for (let k = 0; k < nOut; k++) z[k] += hj * W2[j * nOut + k]; }
       const mx = Math.max(...z), e = Array.from(z, v => Math.exp(v - mx)), sum = e.reduce((a, b) => a + b, 0);
-      return e.map(v => v / sum);                                       // Softmax
+      return { p: e.map(v => v / sum), h };                             // Softmax
     }
+
+    // ---------- 입력 비틀기: 이동·회전·크기·노이즈 ----------
+    const T = { tx: 0, ty: 0, rot: 0, sc: 100, nz: 0 };
+    const NOISE = (() => {                       // 슬라이더를 움직여도 깜박이지 않도록 고정된 노이즈 무늬
+      let seed = 20261117; const a = new Float32Array(784);
+      for (let i = 0; i < 784; i++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; a[i] = seed / 0x3fffffff - 1; }
+      return a;
+    })();
+    const isPlain = t => !t.tx && !t.ty && !t.rot && t.sc === 100 && !t.nz;
+    function warp(g, t) {
+      if (isPlain(t)) return g;
+      const out = new Float32Array(784), c = 13.5, a = t.rot * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a), k = t.sc / 100;
+      const at = (r, q) => (r < 0 || r > 27 || q < 0 || q > 27) ? 0 : g[r * 28 + q];
+      for (let r = 0; r < 28; r++) for (let q = 0; q < 28; q++) {
+        // 출력 픽셀에서 거꾸로 원본 위치를 찾는다: 이동을 되돌리고, 회전을 되돌리고, 크기를 되돌린다
+        const dx = q - c - t.tx, dy = r - c - t.ty;
+        const u = (cs * dx + sn * dy) / k + c, v = (-sn * dx + cs * dy) / k + c;
+        const u0 = Math.floor(u), v0 = Math.floor(v), fu = u - u0, fv = v - v0;
+        let val = at(v0, u0) * (1 - fu) * (1 - fv) + at(v0, u0 + 1) * fu * (1 - fv) + at(v0 + 1, u0) * (1 - fu) * fv + at(v0 + 1, u0 + 1) * fu * fv;
+        if (t.nz) val += t.nz / 100 * NOISE[r * 28 + q];
+        out[r * 28 + q] = Math.min(1, Math.max(0, val));
+      }
+      return out;
+    }
+    const argmax = a => a.indexOf(Math.max(...a));
+
+    function shiftChart(base) {
+      const svg = $('shift-svg'), cap = $('shift-cap');
+      if (!base) { svg.innerHTML = ''; cap.textContent = '숫자를 쓰면 −8픽셀부터 8픽셀까지 가로로 옮겼을 때의 예측이 표시됩니다.'; return; }
+      const S = [];
+      for (let d = -8; d <= 8; d++) S.push(predict(warp(base, Object.assign({}, T, { tx: d }))).p);
+      const k0 = argmax(S[8]);
+      const W = svg.clientWidth || 400, H = 120, L = 38, R = 8, Tp = 16, B = 20;
+      const x = i => L + (W - L - R) * i / 16, y = v => Tp + (H - Tp - B) * (1 - v);
+      let out = '';
+      [0, 0.5, 1].forEach(v => { out += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${css('--rule')}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v * 100}%</text>`; });
+      for (let i = 0; i <= 16; i += 4) out += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle">${i - 8 > 0 ? '+' : ''}${i - 8}px</text>`;
+      out += `<line x1="${x(T.tx + 8)}" x2="${x(T.tx + 8)}" y1="${Tp - 6}" y2="${H - B}" stroke="${css('--ink')}" stroke-dasharray="3 3"/>`;
+      out += `<polyline points="${S.map((p, i) => `${x(i)},${y(p[k0])}`).join(' ')}" fill="none" stroke="${css('--blue')}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      S.forEach((p, i) => {
+        const k = argmax(p), miss = k !== k0;
+        out += `<circle cx="${x(i)}" cy="${y(p[k0])}" r="${miss ? 4 : 3}" fill="${miss ? css('--warn') : css('--panel')}" stroke="${miss ? css('--warn') : css('--blue')}" stroke-width="2"><title>${i - 8}px 이동: ${k0}일 확률 ${pct(p[k0], 1)}, 예측 ${k}</title></circle>`;
+        if (miss) out += `<text class="lab" x="${x(i)}" y="${y(p[k0]) - 8}" text-anchor="middle">${k}</text>`;
+      });
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.innerHTML = out;
+      let lo = 8, hi = 8;
+      while (lo > 0 && argmax(S[lo - 1]) === k0) lo--;
+      while (hi < 16 && argmax(S[hi + 1]) === k0) hi++;
+      const range = lo === 0 && hi === 16 ? '−8픽셀부터 +8픽셀까지 모두' : `${lo - 8}픽셀부터 +${hi - 8}픽셀까지만`;
+      cap.innerHTML = `파란 선은 숫자 <b>${k0}</b>일 확률입니다. ${range} <b>${k0}</b>로 예측하고, 빨간 점은 다른 숫자로 예측한 위치입니다.`;
+    }
+
+    // ---------- 은닉층 뉴런 보기 ----------
+    const hidGrid = $('hid-grid');
+    $('hid-n').textContent = nHid;
+    const BLUE = [29, 106, 174], ORANGE = [213, 94, 0];
+    function paintDiv(cv, vals, scale) {
+      const c2 = cv.getContext('2d'), im = c2.createImageData(28, 28);
+      for (let i = 0; i < 784; i++) {
+        let v = scale ? vals[i] / scale : 0; v = Math.max(-1, Math.min(1, v));
+        const col = v >= 0 ? BLUE : ORANGE, a = Math.abs(v);
+        im.data[i * 4] = 255 + (col[0] - 255) * a; im.data[i * 4 + 1] = 255 + (col[1] - 255) * a; im.data[i * 4 + 2] = 255 + (col[2] - 255) * a; im.data[i * 4 + 3] = 255;
+      }
+      c2.putImageData(im, 0, 0);
+    }
+    const colOf = j => { const w = new Float32Array(784); for (let i = 0; i < 784; i++) w[i] = W1[i * nHid + j]; return w; };
+    const wScale = w => { let m = 0; for (const v of w) m = Math.max(m, Math.abs(v)); return m * 0.7; };
+    const cols = Array.from({ length: nHid }, (_, j) => colOf(j));
+    hidGrid.innerHTML = cols.map((_, j) => `<button type="button" class="neu" data-j="${j}" aria-pressed="false"><canvas width="28" height="28" aria-hidden="true"></canvas><i></i></button>`).join('');
+    const cells = [...hidGrid.children];
+    cells.forEach((b, j) => paintDiv(b.querySelector('canvas'), cols[j], wScale(cols[j])));
+    let pinned = -1, sel = 0, lastIn = null;            // lastIn: 마지막 입력의 { x, h, top }
+
+    function showNeuron(j) {
+      sel = j;
+      cells.forEach((b, k) => b.setAttribute('aria-pressed', String(k === j)));
+      $('hd-title').textContent = `뉴런 #${j + 1}` + (pinned === j ? ' (고정)' : lastIn ? ' (기여도 1위)' : '');
+      paintDiv($('hd-w'), cols[j], wScale(cols[j]));
+      if (lastIn) {
+        const c = new Float32Array(784); let m = 0;
+        for (let i = 0; i < 784; i++) { c[i] = lastIn.x[i] * cols[j][i]; m = Math.max(m, Math.abs(c[i])); }
+        paintDiv($('hd-c'), c, m * 0.8);
+        const hj = lastIn.h[j], ct = hj * W2[j * nOut + lastIn.top];
+        $('hd-h').textContent = hj.toFixed(3);
+        $('hd-contrib-l').textContent = `숫자 ${lastIn.top} 점수에 대한 기여`;
+        $('hd-contrib').textContent = (ct >= 0 ? '+' : '') + ct.toFixed(3);
+      } else {
+        paintDiv($('hd-c'), cols[j], 0);
+        $('hd-h').textContent = '—'; $('hd-contrib-l').textContent = '예측에 대한 기여'; $('hd-contrib').textContent = '—';
+      }
+      const vw = Array.from({ length: nOut }, (_, k) => W2[j * nOut + k]), vm = Math.max(...vw.map(Math.abs)) || 1;
+      $('hd-vote').innerHTML = vw.map((v, k) =>
+        `<div class="${lastIn && k === lastIn.top ? 'cur' : ''}" title="숫자 ${k}: ${v.toFixed(3)}"><div class="vb"><b class="${v >= 0 ? 'pos' : 'neg'}" style="height:${(Math.abs(v) / vm * 50).toFixed(1)}%"></b></div>${k}</div>`).join('');
+    }
+    function updateHidden(x, h, top) {
+      if (!x) {
+        lastIn = null;
+        cells.forEach(b => { b.classList.remove('off', 'top'); b.style.setProperty('--a', '0%'); b.setAttribute('aria-label', `뉴런 #${+b.dataset.j + 1}`); });
+        showNeuron(pinned >= 0 ? pinned : sel);
+        return;
+      }
+      lastIn = { x, h, top };
+      const hm = Math.max(...h) || 1;
+      const order = Array.from(h, (v, j) => [v * W2[j * nOut + top], j]).sort((a, b) => b[0] - a[0]);
+      const best = new Set(order.slice(0, 5).filter(o => o[0] > 0).map(o => o[1]));
+      cells.forEach((b, j) => {
+        b.classList.toggle('off', h[j] <= 0);
+        b.classList.toggle('top', best.has(j));
+        b.style.setProperty('--a', (h[j] / hm * 100).toFixed(1) + '%');
+        b.setAttribute('aria-label', `뉴런 #${j + 1}, 활성값 ${h[j].toFixed(2)}`);
+      });
+      showNeuron(pinned >= 0 ? pinned : order[0][1]);
+    }
+    hidGrid.addEventListener('click', e => {
+      const b = e.target.closest('.neu'); if (!b) return;
+      const j = +b.dataset.j;
+      pinned = pinned === j ? -1 : j;           // 같은 뉴런을 다시 누르면 고정을 푼다
+      if (pinned < 0 && lastIn) updateHidden(lastIn.x, lastIn.h, lastIn.top); else showNeuron(j);
+    });
 
     let queued = false;
     function update() {
       queued = false;
-      const x = toInput();
-      if (!x) return;
+      base = toInput();
+      refreshAll();
+    }
+    function refreshAll() {
+      if (!base) return;
+      const x = warp(base, T);
       const img = sctx.createImageData(28, 28);
       for (let i = 0; i < 784; i++) { const v = Math.round(x[i] * 255); img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
       sctx.putImageData(img, 0, 0);
-      const p = predict(x), top = renderBars(bars, p);
+      const r = predict(x), p = r.p, top = renderBars(bars, p);
       $('big').textContent = top; $('big').classList.remove('empty');
       $('conf').textContent = `${top} (${pct(p[top], 1)})`;
+      updateHidden(x, r.h, top);
+      shiftChart(base);
     }
+
+    const WARP = [['tx', v => (v > 0 ? '+' : '') + v + 'px'], ['ty', v => (v > 0 ? '+' : '') + v + 'px'],
+                  ['rot', v => (v > 0 ? '+' : '') + v + '°'], ['sc', v => v + '%'], ['nz', v => v + '%']];
+    let warpQueued = false;
+    WARP.forEach(([k, f]) => {
+      const el = $('w-' + k);
+      const sync = () => { T[k] = +el.value; $('w-' + k + '-out').textContent = f(T[k]); };
+      sync();
+      el.addEventListener('input', () => {
+        sync();
+        if (!warpQueued) { warpQueued = true; requestAnimationFrame(() => { warpQueued = false; refreshAll(); }); }
+      });
+    });
+    $('warp-reset').addEventListener('click', () => {
+      WARP.forEach(([k, f]) => { const el = $('w-' + k); el.value = k === 'sc' ? 100 : 0; T[k] = +el.value; $('w-' + k + '-out').textContent = f(T[k]); });
+      refreshAll();
+    });
+    let srt; window.addEventListener('resize', () => { clearTimeout(srt); srt = setTimeout(() => shiftChart(base), 150); });
     const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
 
     let drawing = false, last = null;
@@ -562,6 +858,41 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     pad.addEventListener('lostpointercapture', end);
     $('clear').addEventListener('click', reset);
     reset();
+  }
+
+  // ---------- 은닉층 크기 비교 ----------
+  function renderCompare(R) {
+    const C = R.compare || [];
+    if (C.length < 2) {
+      $('cmp-wrap').innerHTML = '<p class="sub" style="margin-top:12px">비교 결과는 다음 GitHub Actions 학습부터 표시됩니다.</p>';
+      return () => {};
+    }
+    const palette = [css('--orange'), css('--blue'), css('--violet'), css('--ok'), css('--warn')];
+    const main = R.config.hidden;
+    // 이 페이지의 모델은 파란색으로 고정하고, 나머지는 작은 쪽부터 다른 색을 쓴다
+    const others = palette.filter(c => c !== css('--blue'));
+    let oi = 0;
+    const color = C.map(c => c.hidden === main ? css('--blue') : others[oi++ % others.length]);
+    const best = Math.max(...C.map(c => c.test.accuracy)), lo = Math.min(...C.map(c => c.test.accuracy));
+    $('cmp-rows').innerHTML = C.map((c, i) => {
+      const w = 15 + 85 * (c.test.accuracy - lo) / ((best - lo) || 1);
+      return `<tr class="${c.hidden === main ? 'is-main' : ''}"><td><span class="sw" style="background:${color[i]}"></span>${c.hidden}개${c.hidden === main ? ' (이 페이지의 모델)' : ''}</td>` +
+        `<td class="num">${fmt(c.params)}</td><td>${pct(c.test.accuracy)}<span class="accbar"><i style="width:${w.toFixed(0)}%;background:${color[i]}"></i></span></td>` +
+        `<td class="num">${fmt(c.test.wrong)}장</td><td class="num">${c.test.loss.toFixed(4)}</td><td class="num">${c.train_seconds}초</td></tr>`;
+    }).join('');
+    $('cmp-legend').innerHTML = C.map((c, i) => `<span style="color:${color[i]}"><i></i><b>은닉층 ${c.hidden}개</b></span>`).join('');
+    const a = C[0], z = C[C.length - 1];
+    const gain = (z.test.accuracy - a.test.accuracy) * 100;
+    $('cmp-note').innerHTML = `뉴런을 ${a.hidden}개에서 ${z.hidden}개로 늘리면 파라미터는 약 ${Math.round(z.params / a.params)}배가 되고 학습 시간은 약 ${(z.train_seconds / a.train_seconds).toFixed(1)}배가 되지만, ` +
+      `테스트 정확도는 ${pct(a.test.accuracy)}에서 ${pct(z.test.accuracy)}로 <b>${gain >= 0 ? '+' : ''}${gain.toFixed(2)}%p</b> 바뀝니다.`;
+    const draw = () => {
+      lineChart($('cmp-acc'), C.map((c, i) => ({ name: `은닉층 ${c.hidden}개`, values: c.history.val_accuracy, color: color[i] })),
+        (v, full) => (v * 100).toFixed(full ? 2 : 1) + '%');
+      lineChart($('cmp-loss'), C.map((c, i) => ({ name: `은닉층 ${c.hidden}개`, values: c.history.val_loss, color: color[i] })),
+        (v, full) => v.toFixed(full ? 4 : 3));
+    };
+    draw();
+    return draw;
   }
 
   // ---------- 화면 채우기 ----------
@@ -592,7 +923,8 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
         (v, full) => v.toFixed(full ? 4 : 3));
     };
     drawCharts();
-    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawCharts, 150); });
+    const drawCompare = renderCompare(R);
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawCharts(); drawCompare(); }, 150); });
 
     // 1단계
     const t0 = R.train0;

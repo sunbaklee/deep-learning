@@ -13,6 +13,7 @@
     python mnist_mlp.py
     python mnist_mlp.py --min-acc 0.96   # 테스트 정확도가 기준보다 낮으면 종료 코드 1
     python mnist_mlp.py --export data    # 사이트(index.html)가 읽는 결과와 가중치를 data/에 저장
+    python mnist_mlp.py --compare 32,512  # 은닉층 뉴런 수만 바꾼 모델을 추가로 학습해 비교
 """
 import argparse
 import json
@@ -28,8 +29,28 @@ def section(title: str) -> None:
     print(f"\n===== {title} =====")
 
 
+def build_model(hidden):
+    """784 -> hidden (ReLU) -> 10 (Softmax) 완전연결 신경망"""
+    model = tf.keras.Sequential([
+        tf.keras.Input(shape=(784,)),                               # 입력층 784
+        tf.keras.layers.Dense(hidden, activation="relu"),           # 은닉층 (모든 입력 뉴런과 연결)
+        tf.keras.layers.Dense(10, activation="softmax"),            # 출력층 (모든 은닉 뉴런과 연결)
+    ])
+    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    return model
+
+
+def compare_entry(hidden, model, history, train_seconds, test_loss, test_acc, total):
+    """은닉층 크기 비교 표와 그래프에 쓰는 값"""
+    return {"hidden": hidden, "params": int(model.count_params()),
+            "history": {k: [round(float(v), 4) for v in vals] for k, vals in history.history.items()},
+            "test": {"loss": round(float(test_loss), 4), "accuracy": round(float(test_acc), 4),
+                     "wrong": int(round((1 - float(test_acc)) * total))},
+            "train_seconds": round(train_seconds, 1)}
+
+
 def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_acc,
-           X_test, y_test, train0_image, train0_label) -> None:
+           X_test, y_test, train0_image, train0_label, compare) -> None:
     """사이트가 읽는 결과(results.json)와 학습된 가중치(weights.json)를 저장한다."""
     os.makedirs(out_dir, exist_ok=True)
 
@@ -69,6 +90,7 @@ def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_
         "samples": samples,
         "wrong": wrong,
         "confusion": confusion.tolist(),
+        "compare": compare,
     }
     with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, separators=(",", ":"))
@@ -89,6 +111,7 @@ def main() -> int:
     parser.add_argument("--min-acc", type=float, default=0.0, help="테스트 정확도 최소 기준 (0~1)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--export", default="", help="사이트용 JSON을 저장할 폴더")
+    parser.add_argument("--compare", default="", help="비교용으로 추가 학습할 은닉층 뉴런 수 (쉼표로 구분, 예: 32,512)")
     args = parser.parse_args()
 
     tf.keras.utils.set_random_seed(args.seed)
@@ -123,12 +146,7 @@ def main() -> int:
 
     # ---------- 3. 완전연결 신경망 구성 ----------
     section("3. 모델 구성")
-    model = tf.keras.Sequential([
-        tf.keras.Input(shape=(784,)),                               # 입력층 784
-        tf.keras.layers.Dense(args.hidden, activation="relu"),      # 은닉층 (모든 입력 뉴런과 연결)
-        tf.keras.layers.Dense(10, activation="softmax"),            # 출력층 (모든 은닉 뉴런과 연결)
-    ])
-    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    model = build_model(args.hidden)
     model.summary()
 
     # ---------- 4. 학습 ----------
@@ -157,9 +175,32 @@ def main() -> int:
     for digit, p in enumerate(probs[0]):
         print(f"  {digit}: {p:7.4f} {'#' * int(round(p * 40))}")
 
+    # ---------- 6. 은닉층 크기 비교 ----------
+    compare = [compare_entry(args.hidden, model, history, train_seconds, test_loss, test_acc, len(y_test))]
+    sizes = sorted({int(v) for v in args.compare.split(",") if v.strip()} - {args.hidden})
+    if sizes:
+        section("6. 은닉층 크기 비교")
+        print(f"은닉층 뉴런 수만 {sizes}개로 바꾸고 나머지 설정은 그대로 두고 학습합니다.")
+        for hidden in sizes:
+            tf.keras.utils.set_random_seed(args.seed)
+            m = build_model(hidden)
+            print(f"\n--- 은닉층 {hidden}개, 파라미터 {m.count_params():,}개 ---")
+            t = time.time()
+            h = m.fit(X_train, Y_train, epochs=args.epochs, batch_size=args.batch_size,
+                      validation_split=0.2, verbose=2)
+            sec = time.time() - t
+            loss_c, acc_c = m.evaluate(X_test, Y_test, verbose=0)
+            print(f"테스트 정확도 {acc_c:.4f}, 테스트 손실 {loss_c:.4f}, 학습 {sec:.1f}초")
+            compare.append(compare_entry(hidden, m, h, sec, loss_c, acc_c, len(y_test)))
+        compare.sort(key=lambda c: c["hidden"])
+        print("\n은닉층 | 파라미터 | 테스트 정확도 | 테스트 손실 | 학습 시간")
+        for c in compare:
+            print(f"{c['hidden']:6d} | {c['params']:8,d} | {c['test']['accuracy']:.4f} | "
+                  f"{c['test']['loss']:.4f} | {c['train_seconds']}초")
+
     if args.export:
         export(args.export, args, model, history, train_seconds, steps, test_loss, test_acc,
-               X_test, y_test, train0_image, train0_label)
+               X_test, y_test, train0_image, train0_label, compare)
         print(f"\n사이트용 결과를 {args.export}/ 폴더에 저장했습니다.")
 
     # GitHub Actions에서 실행하면 결과를 실행 요약 화면에 표시한다
@@ -174,6 +215,12 @@ def main() -> int:
             f.write(f"| 테스트 손실 | {test_loss:.4f} |\n")
             f.write(f"| 테스트 정확도 | **{test_acc:.2%}** |\n")
             f.write(f"\n정답: `{y_test[:10].tolist()}`  \n예측: `{pred.tolist()}`\n")
+            if len(compare) > 1:
+                f.write("\n### 은닉층 크기별 비교\n\n"
+                        "| 은닉층 뉴런 | 파라미터 | 테스트 정확도 | 테스트 손실 | 학습 시간 |\n|---|---|---|---|---|\n")
+                for c in compare:
+                    f.write(f"| {c['hidden']} | {c['params']:,} | {c['test']['accuracy']:.2%} | "
+                            f"{c['test']['loss']:.4f} | {c['train_seconds']}초 |\n")
 
     if test_acc < args.min_acc:
         print(f"테스트 정확도 {test_acc:.4f}가 기준 {args.min_acc:.4f}보다 낮습니다.", file=sys.stderr)

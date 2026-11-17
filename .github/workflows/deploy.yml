@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Train and export results
-        run: python mnist/mnist_mlp.py --min-acc 0.96 --export mnist/data
+        run: python mnist/mnist_mlp.py --min-acc 0.96 --compare 32,512 --export mnist/data
       - uses: actions/upload-artifact@v4
         with:
           name: mnist-data
