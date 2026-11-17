@@ -1,0 +1,21 @@
+name: MNIST training
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mnist/**"
+      - ".github/workflows/mnist.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    container: tensorflow/tensorflow:2.20.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Train and evaluate
+        run: python mnist/mnist_mlp.py --min-acc 0.96
