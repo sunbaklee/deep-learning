@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MNIST 숫자 인식</title>
+<title>MNIST 손글씨 숫자 인식</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <style>
 :root {
@@ -187,7 +187,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
 
 <header class="topbar">
   <a class="btn ghost" href="../" aria-label="딥러닝 실습 메인으로"><svg><use href="#i-back"/></svg>딥러닝 실습</a>
-  <h1>MNIST 숫자 인식</h1>
+  <h1>MNIST 손글씨 숫자 인식</h1>
   <span class="meta" id="meta">784 → 128 → 10 완전연결 신경망</span>
   <span class="spacer"></span>
   <a class="btn" id="run-link" href="https://github.com/sunbaklee/deep-learning/actions" target="_blank" rel="noopener"><svg><use href="#i-run"/></svg>학습 기록</a>
@@ -195,7 +195,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
 </header>
 
 <main class="main" id="app">
-  <div class="panel state" id="state">학습 결과를 불러오는 중이에요…</div>
+  <div class="panel state" id="state">학습 결과를 불러오는 중입니다…</div>
 </main>
 <footer id="foot"></footer>
 
@@ -214,11 +214,11 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
 
   <section class="row play">
     <div class="panel">
-      <h2>직접 써 보기</h2>
-      <p class="sub">검은 칸에 숫자 하나를 크게 써 보세요. 학습된 가중치로 브라우저에서 바로 계산해요.</p>
+      <h2>손글씨 입력과 예측</h2>
+      <p class="sub">검은 칸에 숫자 하나를 크게 쓰면, 학습된 가중치로 브라우저에서 바로 예측합니다.</p>
       <div class="draw">
         <div class="pad-wrap">
-          <canvas id="pad" width="280" height="280" aria-label="숫자를 쓰는 칸. 마우스나 손가락으로 숫자를 그리세요."></canvas>
+          <canvas id="pad" width="280" height="280" aria-label="숫자를 쓰는 칸. 마우스나 손가락으로 숫자를 그리십시오."></canvas>
           <div class="pad-actions">
             <button class="btn" id="clear" type="button"><svg><use href="#i-erase"/></svg>지우기</button>
             <span class="hint">0~9 중 하나</span>
@@ -229,7 +229,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
             <div class="big-digit empty" id="big">?</div>
             <div>
               <div class="label">예측</div>
-              <div class="conf" id="conf" aria-live="polite">숫자를 써 주세요</div>
+              <div class="conf" id="conf" aria-live="polite">숫자를 써 주십시오</div>
             </div>
             <div class="seen">
               <canvas id="seen" width="28" height="28" aria-hidden="true"></canvas>
@@ -242,7 +242,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     </div>
     <div class="panel">
       <h2>학습 곡선</h2>
-      <p class="sub">에폭마다 학습 데이터와 검증 데이터에서 잰 값이에요.</p>
+      <p class="sub">에폭마다 학습 데이터와 검증 데이터로 측정한 값입니다.</p>
       <div class="charts">
         <div class="legend"><span class="tr"><i></i><b>학습 (48,000장)</b></span><span class="va"><i></i><b>검증 (12,000장)</b></span></div>
         <div class="chart"><h3>정확도</h3><svg id="c-acc" role="img" aria-label="에폭별 정확도 그래프"></svg></div>
@@ -251,14 +251,14 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     </div>
   </section>
 
-  <div class="steps-title"><h2>실습 단계</h2><p>파이썬 코드가 GitHub Actions에서 실제로 실행한 순서와 결과예요.</p></div>
+  <div class="steps-title"><h2>실습 과정</h2><p>파이썬 코드가 GitHub Actions에서 실제로 실행한 순서와 결과입니다.</p></div>
 
   <section class="panel step">
     <div class="step-text">
       <h2><span class="n">1</span>데이터 불러오기와 원본 확인</h2>
       <ul>
-        <li><code>mnist.load_data()</code>로 학습 이미지 60,000장, 테스트 이미지 10,000장과 각 이미지의 정답을 불러와요.</li>
-        <li>오른쪽은 전처리 전의 <code>X_train[0]</code>이에요. 28×28 격자의 픽셀값 784개가 0(검정)부터 255(흰색)까지의 정수로 들어 있어요.</li>
+        <li><code>mnist.load_data()</code>로 학습 이미지 60,000장, 테스트 이미지 10,000장과 각 이미지의 정답을 불러옵니다.</li>
+        <li>오른쪽은 전처리 전의 <code>X_train[0]</code>입니다. 28×28 격자에 픽셀값 784개가 0(검정)부터 255(흰색)까지의 정수로 들어 있습니다.</li>
       </ul>
     </div>
     <div class="step-vis">
@@ -273,9 +273,9 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     <div class="step-text">
       <h2><span class="n">2</span>픽셀값 정규화와 배열 변환</h2>
       <ul>
-        <li><code>astype("float32") / 255.0</code>으로 픽셀값을 0~1 범위의 실수로 바꿔요. 밝기의 비율은 그대로 두고 입력값의 크기만 줄여서 학습이 안정돼요.</li>
-        <li><code>reshape(-1, 784)</code>로 28×28 픽셀을 한 줄로 펼쳐요. 오른쪽 띠는 펼친 입력값 784개를 왼쪽부터 순서대로 그린 거예요.</li>
-        <li>정답은 원-핫 인코딩으로 바꿔요. 정답 자리에만 1이 들어가요.</li>
+        <li><code>astype("float32") / 255.0</code>으로 픽셀값을 0~1 범위의 실수로 바꿉니다. 밝기의 비율은 유지하면서 입력값의 크기만 줄이므로 학습이 안정적으로 진행됩니다.</li>
+        <li><code>reshape(-1, 784)</code>로 28×28 픽셀을 한 줄로 펼칩니다. 오른쪽 띠는 펼친 입력값 784개를 왼쪽부터 순서대로 그린 것입니다.</li>
+        <li>정답은 원-핫 인코딩으로 바꿉니다. 정답에 해당하는 자리에만 1이 들어갑니다.</li>
       </ul>
     </div>
     <div class="step-vis">
@@ -297,10 +297,10 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     <div class="step-text">
       <h2><span class="n">3</span>완전연결 신경망 구성</h2>
       <ul>
-        <li>은닉층의 뉴런 128개는 입력층의 뉴런 784개와 모두 연결돼요. 출력층의 뉴런 10개도 은닉층의 128개와 모두 연결돼요.</li>
-        <li>은닉층은 ReLU, 출력층은 Softmax를 써서 숫자 0~9의 확률을 내요.</li>
+        <li>은닉층의 뉴런 128개는 입력층의 뉴런 784개와 모두 연결되고, 출력층의 뉴런 10개도 은닉층의 뉴런 128개와 모두 연결됩니다.</li>
+        <li>은닉층은 ReLU, 출력층은 Softmax를 적용해서 숫자 0~9의 확률을 출력합니다.</li>
       </ul>
-      <p class="note">그림은 뉴런 일부만 그렸어요. 실제 연결 수는 784×128 + 128×10 = 101,632개이고, 여기에 편향 138개를 더하면 파라미터 수가 돼요.</p>
+      <p class="note">그림에는 뉴런의 일부만 그렸습니다. 실제 연결 수는 784×128 + 128×10 = 101,632개이고, 여기에 편향 138개를 더한 값이 파라미터 수입니다.</p>
     </div>
     <div class="step-vis">
       <svg id="net" viewBox="0 0 640 300" role="img" aria-label="784, 128, 10개 뉴런으로 된 완전연결 신경망 구조도"></svg>
@@ -317,15 +317,15 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     <div class="step-text">
       <h2><span class="n">4</span>모델 학습과 1500/1500의 의미</h2>
       <ul>
-        <li>Adam으로 학습하고, 범주형 교차 엔트로피로 예측과 정답의 차이(손실)를 계산해요.</li>
-        <li><code>validation_split=0.2</code>로 60,000장 중 12,000장은 검증에, 48,000장은 학습에 써요.</li>
-        <li><code>batch_size=32</code>이므로 한 에폭은 48,000 ÷ 32 = 1,500단계예요. 한 단계마다 이미지 32장의 손실로 가중치를 한 번 고쳐요.</li>
-        <li>학습 기록의 <code>1500/1500</code>은 그 에폭의 배치를 모두 처리했다는 뜻이에요.</li>
+        <li>Adam으로 학습하고, 범주형 교차 엔트로피로 예측과 정답의 차이(손실)를 계산합니다.</li>
+        <li><code>validation_split=0.2</code>로 60,000장 중 12,000장은 검증에, 48,000장은 학습에 사용합니다.</li>
+        <li><code>batch_size=32</code>이므로 한 에폭은 48,000 ÷ 32 = 1,500단계입니다. 한 단계마다 이미지 32장의 손실을 바탕으로 가중치를 한 번 업데이트합니다.</li>
+        <li>학습 기록의 <code>1500/1500</code>은 해당 에폭의 배치를 모두 처리했다는 뜻입니다.</li>
       </ul>
     </div>
     <div class="step-vis">
       <div>
-        <h3>학습용 60,000장 나누기</h3>
+        <h3>학습용 60,000장의 구성</h3>
         <div class="split"><div class="tr">학습 48,000장</div><div class="va">검증 12,000장</div></div>
       </div>
       <div>
@@ -345,9 +345,9 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     <div class="step-text">
       <h2><span class="n">5</span>테스트와 예측 결과</h2>
       <ul>
-        <li>학습에 쓰지 않은 테스트 이미지 10,000장으로 최종 정확도를 계산해요.</li>
-        <li>테스트 이미지 10장의 정답과 예측을 함께 보여 줘요. 이미지를 누르면 0~9의 예측 확률을 볼 수 있어요.</li>
-        <li><code>argmax</code>로 확률이 가장 높은 숫자를 예측으로 골라요.</li>
+        <li>학습에 쓰지 않은 테스트 이미지 10,000장으로 최종 정확도를 계산합니다.</li>
+        <li>테스트 이미지 10장의 정답과 예측을 함께 표시합니다. 이미지를 누르면 그 이미지의 0~9 예측 확률이 아래에 표시됩니다.</li>
+        <li><code>argmax</code>로 확률이 가장 높은 숫자를 예측으로 선택합니다.</li>
       </ul>
     </div>
     <div class="step-vis">
@@ -362,7 +362,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
   <section class="row play">
     <div class="panel">
       <h2>혼동 행렬</h2>
-      <p class="sub">테스트 10,000장에서 실제 숫자(행)를 무엇으로 예측했는지 센 표예요. 대각선 밖의 칸이 틀린 경우예요.</p>
+      <p class="sub">테스트 10,000장에서 실제 숫자(행)를 무엇으로 예측했는지 센 표입니다. 대각선 밖의 칸이 틀린 경우입니다.</p>
       <div class="scroll-x" style="margin-top:12px">
         <div class="cm-wrap">
           <div class="cm-ylab">실제 숫자</div>
@@ -373,7 +373,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     </div>
     <div class="panel">
       <h2>틀린 예측</h2>
-      <p class="sub" id="wrong-sub">테스트 이미지 중 모델이 틀린 앞쪽 12장이에요.</p>
+      <p class="sub" id="wrong-sub">테스트 이미지 중 모델이 틀린 앞쪽 12장입니다.</p>
       <div class="wrong" id="wrong" style="margin-top:12px; grid-template-columns: repeat(4, minmax(0, 1fr));"></div>
     </div>
   </section>
@@ -484,7 +484,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
       renderBars(bars, new Array(10).fill(0));
       [...bars.children].forEach(r => r.classList.remove('top'));
       $('big').textContent = '?'; $('big').classList.add('empty');
-      $('conf').textContent = '숫자를 써 주세요';
+      $('conf').textContent = '숫자를 써 주십시오';
     }
 
     // MNIST와 같은 방식: 글자를 20×20 안에 맞추고, 무게중심을 28×28의 가운데로 옮긴다
@@ -573,7 +573,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     const when = R.run.trained_at ? new Date(R.run.trained_at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
     $('meta').textContent = `784 → ${cfg.hidden} → 10 · TensorFlow ${R.run.tensorflow}` + (when ? ` · ${when} 학습` : '');
     if (R.run.run_url) $('run-link').href = R.run.run_url;
-    $('foot').innerHTML = `이 페이지의 결과와 가중치는 GitHub Actions가 <a href="https://github.com/sunbaklee/deep-learning/blob/main/mnist/mnist_mlp.py">mnist_mlp.py</a>를 실행해 만든 거예요.` +
+    $('foot').innerHTML = `이 페이지의 결과와 가중치는 GitHub Actions가 <a href="https://github.com/sunbaklee/deep-learning/blob/main/mnist/mnist_mlp.py">mnist_mlp.py</a>를 실행해 만든 것입니다.` +
       (R.run.commit ? ` 커밋 <code>${R.run.commit}</code>.` : '');
 
     $('m-acc').textContent = pct(T.accuracy);
@@ -660,7 +660,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
       `<div class="tile miss"><canvas width="28" height="28" aria-hidden="true"></canvas>` +
       `<span class="tp">정답 <b>${w.label}</b> · 예측 <b class="p">${w.pred}</b></span></div>`).join('');
     [...wrong.children].forEach((t, i) => paint(t.querySelector('canvas'), R.wrong[i].image));
-    $('wrong-sub').textContent = `테스트 10,000장 중 ${fmt(T.total - T.correct)}장을 틀렸어요. 그중 앞쪽 ${R.wrong.length}장이에요.`;
+    $('wrong-sub').textContent = `테스트 10,000장 중 ${fmt(T.total - T.correct)}장을 틀렸습니다. 아래는 그중 앞쪽 ${R.wrong.length}장입니다.`;
 
     setupPad(W);
   }
@@ -670,7 +670,7 @@ footer { max-width: 1320px; margin: 0 auto; padding: 8px 18px 40px; color: var(-
     .catch(() => {
       const s = $('state');
       s.classList.add('err');
-      s.textContent = '학습 결과를 불러오지 못했어요. GitHub Actions의 학습이 끝난 뒤 새로고침해 주세요.';
+      s.textContent = '학습 결과를 불러오지 못했습니다. GitHub Actions의 학습이 끝난 뒤 새로고침하십시오.';
     });
 })();
 </script>

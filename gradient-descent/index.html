@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>선형회귀 경사하강법 대시보드</title>
+<title>선형회귀와 경사하강법</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <style>
 :root {
@@ -176,7 +176,7 @@ tbody tr:hover { background: var(--hover); }
     <button class="icon ghost" id="btn-side" aria-controls="side" aria-expanded="true" aria-label="조작 패널 접기" title="조작 패널 접기 ( [ )"><svg><use href="#i-sidebar"/></svg></button>
     <a class="navlink home" href="../">딥러닝 실습</a>
     <span class="crumb" aria-hidden="true">/</span>
-    <h1>선형회귀 경사하강법</h1>
+    <h1>선형회귀와 경사하강법</h1>
   </div>
   <span class="formula">h = w₁x + w₀ · J = ½Σ(h − y)²</span>
   <div class="seg" role="radiogroup" aria-label="데이터셋">
@@ -235,7 +235,7 @@ tbody tr:hover { background: var(--hover); }
         <div class="panel-head">
           <div>
             <h2>비용 곡면 J(w₁, w₀)</h2>
-            <p class="sub">드래그로 돌리고 휠로 확대·축소해요.</p>
+            <p class="sub">드래그하면 회전하고, 휠을 굴리면 확대·축소합니다.</p>
           </div>
           <div class="toolbar" role="group" aria-label="3D 보기 조작">
             <div class="seg" role="group" aria-label="드래그 동작">
@@ -259,7 +259,7 @@ tbody tr:hover { background: var(--hover); }
       <div class="right-col">
         <div class="panel">
           <h2>데이터와 직선</h2>
-          <p class="sub">점선 세로선은 각 데이터의 오차 (h − y)예요.</p>
+          <p class="sub">점선 세로선은 각 데이터의 오차 (h − y)입니다.</p>
           <div id="plot2d"></div>
         </div>
         <div class="panel">
@@ -273,7 +273,7 @@ tbody tr:hover { background: var(--hover); }
     <section class="lower">
       <div class="panel">
         <h2>기울기 벡터장 −∇J(w₁, w₀)</h2>
-        <p class="sub">회색 화살표는 각 지점에서 비용이 가장 빨리 줄어드는 방향이에요. 주황 화살표가 지금 위치의 −∇J예요. 등고선 위를 클릭하면 그 지점이 새 시작점이 돼요.</p>
+        <p class="sub">회색 화살표는 각 지점에서 비용이 가장 빨리 줄어드는 방향이고, 주황 화살표는 현재 위치의 −∇J입니다. 그래프를 클릭하면 클릭한 지점이 새 시작점이 됩니다.</p>
         <div id="plotvec" role="img" aria-label="w₁, w₀ 평면의 비용 등고선과 기울기 벡터장"></div>
         <div class="legend vec-legend">
           <span class="k-arrow"><i></i><b>−∇J 방향</b></span>
@@ -286,12 +286,12 @@ tbody tr:hover { background: var(--hover); }
       <div class="calc-wrap">
         <div class="panel">
           <h2>다음 단계 계산</h2>
-          <p class="sub">지금 위치에서 한 단계 진행하면 이렇게 바뀌어요.</p>
+          <p class="sub">현재 위치에서 한 단계 진행하면 값이 아래와 같이 바뀝니다.</p>
           <div class="calc" id="calc"></div>
         </div>
         <div class="panel">
           <h2>기울기 벡터</h2>
-          <p class="sub">∇J = (∂J/∂w₁, ∂J/∂w₀). 경사하강법은 이 반대 방향으로 η만큼 움직여요.</p>
+          <p class="sub">기울기 벡터는 ∇J = (∂J/∂w₁, ∂J/∂w₀)이고, 경사하강법은 ∇J의 반대 방향으로 η배만큼 이동합니다.</p>
           <div class="calc" id="gvec"></div>
         </div>
       </div>
@@ -675,7 +675,7 @@ tbody tr:hover { background: var(--hover); }
     S.step++;
     if (!isFinite(S.w) || !isFinite(S.b) || Math.abs(S.w) > 1e3 || Math.abs(S.b) > 1e3) {
       S.done = 'diverge';
-      setStatus('발산했어요. 학습률을 낮춰 보세요', 'warn');
+      setStatus('발산했습니다. 학습률을 낮추고 다시 시작하십시오', 'warn');
       pause(true);
       S.w = S.hist[S.hist.length - 1][0]; S.b = S.hist[S.hist.length - 1][1];
       S.step--;
@@ -686,7 +686,7 @@ tbody tr:hover { background: var(--hover); }
     if (S.hist.length > MAX_HIST) { S.hist.shift(); S.histStart++; }
     if (grad(S.w, S.b, d).norm < 1e-3) {
       S.done = 'converge';
-      setStatus(`${S.step}단계 만에 수렴했어요`, 'ok');
+      setStatus(`${S.step}단계 만에 수렴했습니다`, 'ok');
       pause(true);
     }
     refresh();
