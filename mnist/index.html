@@ -175,65 +175,56 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
 #shift-svg text.lab { font-weight: 700; fill: var(--warn); }
 .shift .cap { margin-top: 2px; font-size: 12.5px; color: var(--ink); }
 
-/* ---------- 은닉층 뉴런 ---------- */
-.hid-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
-.hid-head > div:first-child { flex: 1; min-width: 280px; }
-.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
-.keys span { display: inline-flex; align-items: center; gap: 6px; }
-.keys i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
-.keys .k-pos { background: var(--blue); } .keys .k-neg { background: var(--orange); }
-.keys .k-off { background: var(--panel); border: 1px solid var(--rule); opacity: .5; }
-.keys .k-top { background: var(--panel); box-shadow: inset 0 0 0 2px var(--orange); }
-.hid-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; margin-top: 14px; align-items: start; }
-.hid-grid { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 5px; }
-.neu { position: relative; padding: 2px 2px 5px; border: 1px solid var(--rule); border-radius: 5px; background: var(--panel); cursor: pointer;
-  display: grid; gap: 3px; transition: opacity .15s ease-out; font: inherit; }
-.neu canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; border-radius: 2px; }
-.neu i { display: block; height: 3px; border-radius: 2px; background: var(--hover); position: relative; overflow: hidden; }
-.neu i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--a, 0%); background: var(--blue); border-radius: 2px; }
-.neu.off { opacity: .32; }
-.neu.top { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
-.neu[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); opacity: 1; }
-.neu:hover { opacity: 1; }
-.hid-detail { display: grid; gap: 12px; position: sticky; top: 76px; }
-.hid-detail h3 { margin: 0; font-size: 14px; }
-.hd-imgs { display: flex; gap: 12px; }
-.hd-imgs figure { margin: 0; }
-.hd-imgs canvas { width: 136px; height: 136px; image-rendering: pixelated; border: 1px solid var(--rule); border-radius: 4px; display: block; }
-.hd-imgs figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.hd-stats { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border: 1px solid var(--rule); border-radius: 8px; }
-.hd-stats div { padding: 8px 12px; } .hd-stats div + div { border-left: 1px solid var(--rule); }
-.hd-stats dt { font-size: 12px; color: var(--muted); font-weight: 600; }
-.hd-stats dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.vote { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
-.vote div { display: grid; gap: 3px; justify-items: center; font-size: 12px; font-weight: 600; color: var(--muted); }
-.vote .vb { position: relative; width: 100%; height: 64px; background: var(--hover); border-radius: 3px; }
-.vote .vb::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--control); }
-.vote .vb b { position: absolute; left: 20%; right: 20%; border-radius: 2px; }
-.vote .vb b.pos { bottom: 50%; background: var(--blue); } .vote .vb b.neg { top: 50%; background: var(--orange); }
-.vote div.cur { color: var(--ink); } .vote div.cur .vb { box-shadow: inset 0 0 0 1px var(--ink); }
-.hid-detail .note { margin: 0; color: var(--muted); font-size: 12.5px; }
+/* ---------- 모델과 대결 ---------- */
+.quiz-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.quiz-head > div:first-child { flex: 1; min-width: 260px; }
+.score { display: flex; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.score div { padding: 6px 18px; display: grid; justify-items: center; min-width: 84px; }
+.score div + div { border-left: 1px solid var(--rule); }
+.score span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.score b { font: 800 26px/1.15 var(--sans); font-variant-numeric: tabular-nums; }
+.score .me b { color: var(--blue); } .score .ai b { color: var(--violet); }
+.quiz-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; margin-top: 16px; align-items: start; }
+.q-left { display: grid; gap: 10px; justify-items: center; }
+#q-img { width: 224px; height: 224px; image-rendering: pixelated; background: #000; border-radius: 8px; display: block; }
+.q-dots { display: flex; gap: 6px; }
+.q-dots i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--control); background: var(--panel); }
+.q-dots i.now { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.q-dots i.win { background: var(--ok); border-color: var(--ok); }
+.q-dots i.lose { background: var(--warn); border-color: var(--warn); }
+.q-dots i.tie { background: var(--control); border-color: var(--control); }
+.q-right { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.q-prompt { margin: 0; font-size: 17px; font-weight: 700; }
+.q-prompt small { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+.q-keys { display: grid; grid-template-columns: repeat(5, 64px); gap: 8px; }
+.q-keys button { height: 56px; border-radius: 8px; border: 1px solid var(--control); background: var(--panel); color: var(--ink);
+  font: 700 22px/1 var(--sans); cursor: pointer; transition: background-color .15s ease-out; }
+.q-keys button:hover:not(:disabled) { background: var(--hover); }
+.q-keys button:disabled { cursor: default; color: var(--muted); border-color: var(--rule); }
+.q-keys button.is-answer { background: var(--ok); border-color: var(--ok); color: #fff; }
+.q-keys button.is-wrong { background: var(--warn); border-color: var(--warn); color: #fff; }
+.q-keys button.is-model { box-shadow: 0 0 0 3px var(--violet); }
+.q-reveal { display: grid; grid-template-columns: repeat(3, minmax(0, 150px)); border: 1px solid var(--rule); border-radius: 10px; }
+.q-reveal div { padding: 8px 14px; } .q-reveal div + div { border-left: 1px solid var(--rule); }
+.q-reveal dt { font-size: 12px; color: var(--muted); font-weight: 600; }
+.q-reveal dd { margin: 0; font-size: 20px; font-weight: 800; }
+.q-reveal dd small { font-size: 12.5px; font-weight: 600; margin-left: 6px; }
+.q-reveal .ok { color: var(--ok); } .q-reveal .no { color: var(--warn); }
+.q-msg { margin: 0; font-size: 14px; }
+.q-actions { display: flex; gap: 8px; align-items: center; }
+.q-actions .hint { color: var(--muted); font-size: 12.5px; }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn.primary:hover { background: #185C98; }
+@media (max-width: 760px) {
+  .quiz-body { grid-template-columns: 1fr; justify-items: center; }
+  .q-keys { grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; }
+  .q-reveal { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
-/* ---------- 은닉층 크기 비교 ---------- */
-.cmp-body { display: grid; gap: 18px; margin-top: 14px; }
-.cmp-table { max-width: 860px; }
-.cmp-table td .accbar { display: inline-block; vertical-align: middle; width: 72px; height: 8px; margin-left: 8px; background: var(--hover); border-radius: 4px; overflow: hidden; }
-.cmp-table td .accbar i { display: block; height: 100%; border-radius: 4px; }
-.cmp-table tr.is-main td { font-weight: 700; }
-.cmp-table .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 0; }
-.cmp-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
-.cmp-charts .legend { grid-column: 1 / -1; }
-.cmp-charts .legend i { border-top-width: 3px; }
-.cmp-note { margin: 14px 0 0; font-size: 13.5px; }
 
 @media (max-width: 1100px) {
-  .hid-body, .cmp-body { grid-template-columns: 1fr; }
-  .hid-detail { position: static; }
-  .hid-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
-  .hid-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-  .cmp-charts { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 1100px) {
@@ -259,6 +250,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
   <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
   <symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V12M12 20V5M19 20v-9"/></symbol>
   <symbol id="i-erase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
 </svg>
 
@@ -267,6 +259,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
   <h1>MNIST 손글씨 숫자 인식</h1>
   <span class="meta" id="meta">784 → 128 → 10 완전연결 신경망</span>
   <span class="spacer"></span>
+  <a class="btn" href="../compare/"><svg><use href="#i-bars"/></svg>은닉층 크기 비교</a>
   <a class="btn" id="run-link" href="https://github.com/sunbaklee/deep-learning/actions" target="_blank" rel="noopener"><svg><use href="#i-run"/></svg>학습 기록</a>
   <a class="btn" href="https://github.com/sunbaklee/deep-learning/blob/main/mnist/mnist_mlp.py" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>파이썬 코드</a>
 </header>
@@ -346,56 +339,30 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
     </div>
   </section>
 
-  <section class="panel" aria-labelledby="hid-h">
-    <div class="hid-head">
+  <section class="panel" aria-labelledby="quiz-h">
+    <div class="quiz-head">
       <div>
-        <h2 id="hid-h">은닉층 뉴런 <span id="hid-n">128</span>개</h2>
-        <p class="sub">칸 하나가 은닉층 뉴런 하나입니다. 그림은 그 뉴런이 입력 픽셀 784개에 곱하는 가중치를 28×28로 배치한 것이고, 아래 막대는 지금 입력에 대한 활성값입니다. 위에서 숫자를 쓰면 함께 바뀝니다.</p>
+        <h2 id="quiz-h">모델과 대결</h2>
+        <p class="sub">테스트 이미지 10장의 숫자를 맞히고, 같은 이미지에 대한 모델의 답과 점수를 비교합니다. 모델이 틀린 이미지가 절반 넘게 섞여 있습니다.</p>
       </div>
-      <div class="keys" aria-hidden="true">
-        <span><i class="k-pos"></i>+ 가중치</span><span><i class="k-neg"></i>− 가중치</span>
-        <span><i class="k-off"></i>꺼진 뉴런 (ReLU 출력 0)</span><span><i class="k-top"></i>예측에 가장 크게 기여한 5개</span>
-      </div>
+      <div class="score" aria-live="polite"><div class="me"><span>나</span><b id="q-me">0</b></div><div class="ai"><span>모델</span><b id="q-ai">0</b></div></div>
     </div>
-    <div class="hid-body">
-      <div class="hid-grid" id="hid-grid" aria-label="은닉층 뉴런 목록"></div>
-      <div class="hid-detail" aria-live="polite">
-        <h3 id="hd-title"></h3>
-        <div class="hd-imgs">
-          <figure><canvas id="hd-w" width="28" height="28" aria-hidden="true"></canvas><figcaption>가중치</figcaption></figure>
-          <figure><canvas id="hd-c" width="28" height="28" aria-hidden="true"></canvas><figcaption>입력 × 가중치</figcaption></figure>
-        </div>
-        <dl class="hd-stats">
-          <div><dt>활성값 h</dt><dd id="hd-h">—</dd></div>
-          <div><dt id="hd-contrib-l">예측에 대한 기여</dt><dd id="hd-contrib">—</dd></div>
+    <div class="quiz-body">
+      <div class="q-left">
+        <canvas id="q-img" width="28" height="28" role="img" aria-label="문제 이미지"></canvas>
+        <div class="q-dots" id="q-dots" aria-hidden="true"></div>
+      </div>
+      <div class="q-right">
+        <p class="q-prompt" id="q-prompt"></p>
+        <div class="q-keys" id="q-keys" role="group" aria-label="숫자 선택"></div>
+        <dl class="q-reveal" id="q-reveal" hidden>
+          <div><dt>정답</dt><dd id="q-label"></dd></div>
+          <div><dt>내 답</dt><dd id="q-mine"></dd></div>
+          <div><dt>모델의 답</dt><dd id="q-model"></dd></div>
         </dl>
-        <div>
-          <h3 style="margin-bottom:6px">출력층 숫자 0~9로 가는 가중치</h3>
-          <div class="vote" id="hd-vote"></div>
-        </div>
-        <p class="note">파란 칸에 획이 지나가면 활성값이 커지고, 주황 칸에 획이 지나가면 작아집니다. 활성값에 출력층 가중치를 곱한 값이 그 숫자의 점수에 더해집니다.</p>
+        <p class="q-msg" id="q-msg"></p>
+        <div class="q-actions"><button class="btn primary" id="q-next" type="button" hidden></button><span class="hint" id="q-hint">키보드 숫자 키로도 답할 수 있습니다.</span></div>
       </div>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="cmp-h">
-    <h2 id="cmp-h">은닉층 크기별 비교</h2>
-    <p class="sub">은닉층 뉴런 수만 바꾸고 나머지 설정(에폭, 배치 크기, 검증 비율, 시드)은 그대로 두고 GitHub Actions에서 함께 학습한 모델들입니다.</p>
-    <div id="cmp-wrap">
-      <div class="cmp-body">
-        <div class="scroll-x">
-          <table class="cmp-table">
-            <thead><tr><th>은닉층 뉴런</th><th class="num">파라미터</th><th>테스트 정확도</th><th class="num">틀린 이미지</th><th class="num">테스트 손실</th><th class="num">학습 시간</th></tr></thead>
-            <tbody id="cmp-rows"></tbody>
-          </table>
-        </div>
-        <div class="cmp-charts">
-          <div class="legend" id="cmp-legend"></div>
-          <div class="chart"><h3>검증 정확도</h3><svg id="cmp-acc" role="img" aria-label="은닉층 크기별 에폭당 검증 정확도"></svg></div>
-          <div class="chart"><h3>검증 손실</h3><svg id="cmp-loss" role="img" aria-label="은닉층 크기별 에폭당 검증 손실"></svg></div>
-        </div>
-      </div>
-      <p class="cmp-note" id="cmp-note"></p>
     </div>
   </section>
 
@@ -629,7 +596,6 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
     let base = null;                               // 20×20 맞춤과 가운데 정렬까지 끝낸 입력 (비틀기 전)
     function reset() {
       base = null;
-      updateHidden(null);
       shiftChart(null);
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 280, 280);
       sctx.fillStyle = '#000'; sctx.fillRect(0, 0, 28, 28);
@@ -733,74 +699,6 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
       cap.innerHTML = `파란 선은 숫자 <b>${k0}</b>일 확률입니다. ${range} <b>${k0}</b>로 예측하고, 빨간 점은 다른 숫자로 예측한 위치입니다.`;
     }
 
-    // ---------- 은닉층 뉴런 보기 ----------
-    const hidGrid = $('hid-grid');
-    $('hid-n').textContent = nHid;
-    const BLUE = [29, 106, 174], ORANGE = [213, 94, 0];
-    function paintDiv(cv, vals, scale) {
-      const c2 = cv.getContext('2d'), im = c2.createImageData(28, 28);
-      for (let i = 0; i < 784; i++) {
-        let v = scale ? vals[i] / scale : 0; v = Math.max(-1, Math.min(1, v));
-        const col = v >= 0 ? BLUE : ORANGE, a = Math.abs(v);
-        im.data[i * 4] = 255 + (col[0] - 255) * a; im.data[i * 4 + 1] = 255 + (col[1] - 255) * a; im.data[i * 4 + 2] = 255 + (col[2] - 255) * a; im.data[i * 4 + 3] = 255;
-      }
-      c2.putImageData(im, 0, 0);
-    }
-    const colOf = j => { const w = new Float32Array(784); for (let i = 0; i < 784; i++) w[i] = W1[i * nHid + j]; return w; };
-    const wScale = w => { let m = 0; for (const v of w) m = Math.max(m, Math.abs(v)); return m * 0.7; };
-    const cols = Array.from({ length: nHid }, (_, j) => colOf(j));
-    hidGrid.innerHTML = cols.map((_, j) => `<button type="button" class="neu" data-j="${j}" aria-pressed="false"><canvas width="28" height="28" aria-hidden="true"></canvas><i></i></button>`).join('');
-    const cells = [...hidGrid.children];
-    cells.forEach((b, j) => paintDiv(b.querySelector('canvas'), cols[j], wScale(cols[j])));
-    let pinned = -1, sel = 0, lastIn = null;            // lastIn: 마지막 입력의 { x, h, top }
-
-    function showNeuron(j) {
-      sel = j;
-      cells.forEach((b, k) => b.setAttribute('aria-pressed', String(k === j)));
-      $('hd-title').textContent = `뉴런 #${j + 1}` + (pinned === j ? ' (고정)' : lastIn ? ' (기여도 1위)' : '');
-      paintDiv($('hd-w'), cols[j], wScale(cols[j]));
-      if (lastIn) {
-        const c = new Float32Array(784); let m = 0;
-        for (let i = 0; i < 784; i++) { c[i] = lastIn.x[i] * cols[j][i]; m = Math.max(m, Math.abs(c[i])); }
-        paintDiv($('hd-c'), c, m * 0.8);
-        const hj = lastIn.h[j], ct = hj * W2[j * nOut + lastIn.top];
-        $('hd-h').textContent = hj.toFixed(3);
-        $('hd-contrib-l').textContent = `숫자 ${lastIn.top} 점수에 대한 기여`;
-        $('hd-contrib').textContent = (ct >= 0 ? '+' : '') + ct.toFixed(3);
-      } else {
-        paintDiv($('hd-c'), cols[j], 0);
-        $('hd-h').textContent = '—'; $('hd-contrib-l').textContent = '예측에 대한 기여'; $('hd-contrib').textContent = '—';
-      }
-      const vw = Array.from({ length: nOut }, (_, k) => W2[j * nOut + k]), vm = Math.max(...vw.map(Math.abs)) || 1;
-      $('hd-vote').innerHTML = vw.map((v, k) =>
-        `<div class="${lastIn && k === lastIn.top ? 'cur' : ''}" title="숫자 ${k}: ${v.toFixed(3)}"><div class="vb"><b class="${v >= 0 ? 'pos' : 'neg'}" style="height:${(Math.abs(v) / vm * 50).toFixed(1)}%"></b></div>${k}</div>`).join('');
-    }
-    function updateHidden(x, h, top) {
-      if (!x) {
-        lastIn = null;
-        cells.forEach(b => { b.classList.remove('off', 'top'); b.style.setProperty('--a', '0%'); b.setAttribute('aria-label', `뉴런 #${+b.dataset.j + 1}`); });
-        showNeuron(pinned >= 0 ? pinned : sel);
-        return;
-      }
-      lastIn = { x, h, top };
-      const hm = Math.max(...h) || 1;
-      const order = Array.from(h, (v, j) => [v * W2[j * nOut + top], j]).sort((a, b) => b[0] - a[0]);
-      const best = new Set(order.slice(0, 5).filter(o => o[0] > 0).map(o => o[1]));
-      cells.forEach((b, j) => {
-        b.classList.toggle('off', h[j] <= 0);
-        b.classList.toggle('top', best.has(j));
-        b.style.setProperty('--a', (h[j] / hm * 100).toFixed(1) + '%');
-        b.setAttribute('aria-label', `뉴런 #${j + 1}, 활성값 ${h[j].toFixed(2)}`);
-      });
-      showNeuron(pinned >= 0 ? pinned : order[0][1]);
-    }
-    hidGrid.addEventListener('click', e => {
-      const b = e.target.closest('.neu'); if (!b) return;
-      const j = +b.dataset.j;
-      pinned = pinned === j ? -1 : j;           // 같은 뉴런을 다시 누르면 고정을 푼다
-      if (pinned < 0 && lastIn) updateHidden(lastIn.x, lastIn.h, lastIn.top); else showNeuron(j);
-    });
-
     let queued = false;
     function update() {
       queued = false;
@@ -816,7 +714,6 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
       const r = predict(x), p = r.p, top = renderBars(bars, p);
       $('big').textContent = top; $('big').classList.remove('empty');
       $('conf').textContent = `${top} (${pct(p[top], 1)})`;
-      updateHidden(x, r.h, top);
       shiftChart(base);
     }
 
@@ -860,39 +757,92 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
     reset();
   }
 
-  // ---------- 은닉층 크기 비교 ----------
-  function renderCompare(R) {
-    const C = R.compare || [];
-    if (C.length < 2) {
-      $('cmp-wrap').innerHTML = '<p class="sub" style="margin-top:12px">비교 결과는 다음 GitHub Actions 학습부터 표시됩니다.</p>';
-      return () => {};
+  // ---------- 모델과 대결 ----------
+  function setupQuiz(R) {
+    // 새 학습 결과에는 quiz가 들어 있고, 예전 결과라면 틀린 예측과 예시 이미지로 대신한다
+    const toFlat = img => Uint8Array.from(img.flat());
+    const fromB64 = b => Uint8Array.from(atob(b), ch => ch.charCodeAt(0));
+    const pool = R.quiz ? R.quiz.map(q => ({ px: fromB64(q.img), label: q.label, pred: q.pred, conf: q.conf }))
+      : R.wrong.map(w => ({ px: toFlat(w.image), label: w.label, pred: w.pred, conf: w.conf }))
+          .concat(R.samples.filter(s => s.pred === s.label).map(s => ({ px: toFlat(s.image), label: s.label, pred: s.pred, conf: Math.max(...s.probs) })));
+    const N = 10;
+    const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const keys = $('q-keys'), cv = $('q-img'), c2 = cv.getContext('2d');
+    keys.innerHTML = Array.from({ length: 10 }, (_, d) => `<button type="button" data-d="${d}">${d}</button>`).join('');
+    const btns = [...keys.children];
+    let set = [], k = 0, me = 0, ai = 0, answered = false, results = [];
+
+    function draw(px) {
+      const im = c2.createImageData(28, 28);
+      for (let i = 0; i < 784; i++) { im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = px[i]; im.data[i * 4 + 3] = 255; }
+      c2.putImageData(im, 0, 0);
     }
-    const palette = [css('--orange'), css('--blue'), css('--violet'), css('--ok'), css('--warn')];
-    const main = R.config.hidden;
-    // 이 페이지의 모델은 파란색으로 고정하고, 나머지는 작은 쪽부터 다른 색을 쓴다
-    const others = palette.filter(c => c !== css('--blue'));
-    let oi = 0;
-    const color = C.map(c => c.hidden === main ? css('--blue') : others[oi++ % others.length]);
-    const best = Math.max(...C.map(c => c.test.accuracy)), lo = Math.min(...C.map(c => c.test.accuracy));
-    $('cmp-rows').innerHTML = C.map((c, i) => {
-      const w = 15 + 85 * (c.test.accuracy - lo) / ((best - lo) || 1);
-      return `<tr class="${c.hidden === main ? 'is-main' : ''}"><td><span class="sw" style="background:${color[i]}"></span>${c.hidden}개${c.hidden === main ? ' (이 페이지의 모델)' : ''}</td>` +
-        `<td class="num">${fmt(c.params)}</td><td>${pct(c.test.accuracy)}<span class="accbar"><i style="width:${w.toFixed(0)}%;background:${color[i]}"></i></span></td>` +
-        `<td class="num">${fmt(c.test.wrong)}장</td><td class="num">${c.test.loss.toFixed(4)}</td><td class="num">${c.train_seconds}초</td></tr>`;
-    }).join('');
-    $('cmp-legend').innerHTML = C.map((c, i) => `<span style="color:${color[i]}"><i></i><b>은닉층 ${c.hidden}개</b></span>`).join('');
-    const a = C[0], z = C[C.length - 1];
-    const gain = (z.test.accuracy - a.test.accuracy) * 100;
-    $('cmp-note').innerHTML = `뉴런을 ${a.hidden}개에서 ${z.hidden}개로 늘리면 파라미터는 약 ${Math.round(z.params / a.params)}배가 되고 학습 시간은 약 ${(z.train_seconds / a.train_seconds).toFixed(1)}배가 되지만, ` +
-      `테스트 정확도는 ${pct(a.test.accuracy)}에서 ${pct(z.test.accuracy)}로 <b>${gain >= 0 ? '+' : ''}${gain.toFixed(2)}%p</b> 바뀝니다.`;
-    const draw = () => {
-      lineChart($('cmp-acc'), C.map((c, i) => ({ name: `은닉층 ${c.hidden}개`, values: c.history.val_accuracy, color: color[i] })),
-        (v, full) => (v * 100).toFixed(full ? 2 : 1) + '%');
-      lineChart($('cmp-loss'), C.map((c, i) => ({ name: `은닉층 ${c.hidden}개`, values: c.history.val_loss, color: color[i] })),
-        (v, full) => v.toFixed(full ? 4 : 3));
-    };
-    draw();
-    return draw;
+    function dots() {
+      $('q-dots').innerHTML = Array.from({ length: N }, (_, i) =>
+        `<i class="${results[i] || (i === k && k < N ? 'now' : '')}"></i>`).join('');
+    }
+    function start() {
+      const wrong = shuffle(pool.filter(q => q.pred !== q.label)), right = shuffle(pool.filter(q => q.pred === q.label));
+      const nw = Math.min(wrong.length, 6);
+      set = shuffle(wrong.slice(0, nw).concat(right.slice(0, N - nw)));
+      k = 0; me = 0; ai = 0; results = [];
+      $('q-me').textContent = 0; $('q-ai').textContent = 0;
+      show();
+    }
+    function show() {
+      answered = false;
+      const q = set[k];
+      draw(q.px);
+      $('q-prompt').innerHTML = `${k + 1}번째 문제 <small>이 숫자는 무엇입니까?</small>`;
+      btns.forEach(b => { b.disabled = false; b.className = ''; });
+      $('q-reveal').hidden = true; $('q-msg').textContent = ''; $('q-next').hidden = true; $('q-hint').hidden = false;
+      dots();
+    }
+    function answer(d) {
+      if (answered || k >= N) return;
+      answered = true;
+      const q = set[k], meOk = d === q.label, aiOk = q.pred === q.label;
+      if (meOk) me++; if (aiOk) ai++;
+      results[k] = meOk && !aiOk ? 'win' : !meOk && aiOk ? 'lose' : 'tie';
+      $('q-me').textContent = me; $('q-ai').textContent = ai;
+      btns.forEach(b => {
+        const v = +b.dataset.d; b.disabled = true;
+        if (v === q.label) b.classList.add('is-answer'); else if (v === d) b.classList.add('is-wrong');
+        if (v === q.pred) b.classList.add('is-model');
+      });
+      const mark = ok => `<small class="${ok ? 'ok' : 'no'}">${ok ? '맞음' : '틀림'}</small>`;
+      $('q-label').textContent = q.label;
+      $('q-mine').innerHTML = d + mark(meOk);
+      $('q-model').innerHTML = q.pred + mark(aiOk) + `<small style="color:var(--muted)">확신 ${pct(q.conf, 0)}</small>`;
+      $('q-reveal').hidden = false;
+      $('q-msg').textContent = meOk && !aiOk ? '모델을 이겼습니다. 보라색 테두리가 모델이 고른 숫자입니다.'
+        : !meOk && aiOk ? '이번 문제는 모델이 맞혔습니다.'
+        : meOk ? '둘 다 맞혔습니다.' : '둘 다 틀렸습니다.';
+      $('q-hint').hidden = true;
+      const nb = $('q-next');
+      nb.textContent = k === N - 1 ? '결과 보기' : '다음 문제';
+      nb.hidden = false; nb.focus();
+      dots();
+    }
+    function next() {
+      if (k < N - 1) { k++; show(); return; }
+      k = N; dots();
+      const verdict = me > ai ? '모델을 이겼습니다!' : me < ai ? '모델이 이겼습니다.' : '비겼습니다.';
+      $('q-prompt').innerHTML = `${verdict} <small>나 ${me}문제, 모델 ${ai}문제를 맞혔습니다.</small>`;
+      $('q-reveal').hidden = true; btns.forEach(b => { b.disabled = true; b.className = ''; });
+      $('q-msg').textContent = '모델은 테스트 이미지 10,000장 중 97% 이상을 맞히지만, 이 대결에는 모델이 틀린 이미지만 골라서 6장을 넣었습니다.';
+      const nb = $('q-next'); nb.textContent = '다시 하기'; nb.hidden = false; nb.focus();
+    }
+    keys.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (b) answer(+b.dataset.d); });
+    $('q-next').addEventListener('click', () => (k >= N ? start() : next()));
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (/^[0-9]$/.test(e.key) && !answered && k < N) {
+        const r = $('q-img').getBoundingClientRect();
+        if (r.bottom > 0 && r.top < innerHeight) { e.preventDefault(); answer(+e.key); }   // 대결 화면이 보일 때만
+      }
+    });
+    start();
   }
 
   // ---------- 화면 채우기 ----------
@@ -923,8 +873,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
         (v, full) => v.toFixed(full ? 4 : 3));
     };
     drawCharts();
-    const drawCompare = renderCompare(R);
-    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { drawCharts(); drawCompare(); }, 150); });
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawCharts, 150); });
 
     // 1단계
     const t0 = R.train0;
@@ -995,6 +944,7 @@ input[type=range] { width: 100%; height: 22px; margin: 2px 0 0; accent-color: va
     $('wrong-sub').textContent = `테스트 10,000장 중 ${fmt(T.total - T.correct)}장을 틀렸습니다. 아래는 그중 앞쪽 ${R.wrong.length}장입니다.`;
 
     setupPad(W);
+    setupQuiz(R);
   }
 
   Promise.all(['data/results.json', 'data/weights.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })))

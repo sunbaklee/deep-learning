@@ -101,8 +101,22 @@ footer a { color: var(--blue); text-underline-offset: 3px; }
         <div>
           <h2>MNIST 손글씨 숫자 인식</h2>
           <p>은닉층 1개짜리 완전연결 신경망(784 → 128 → 10)을 GitHub Actions에서 파이썬으로 학습하고, 직접 쓴 숫자를 학습된 모델로 인식합니다.</p>
-          <div class="chips"><span>손글씨 인식</span><span>학습 곡선</span><span>혼동 행렬</span><span>TensorFlow/Keras</span></div>
+          <div class="chips"><span>손글씨 인식</span><span>입력 비틀기</span><span>모델과 대결</span><span>혼동 행렬</span></div>
           <div class="stat" id="mn-stat"></div>
+        </div>
+        <span class="go">열기<svg><use href="#i-arrow"/></svg></span>
+      </a>
+    </li>
+    <li class="lab">
+      <a href="compare/">
+        <div class="thumb" aria-hidden="true">
+          <svg viewBox="0 0 300 180" id="cmp-thumb"></svg>
+        </div>
+        <div>
+          <h2>은닉층 크기 비교</h2>
+          <p>MNIST 신경망의 은닉층 뉴런 수만 32개, 128개, 512개로 바꿔 학습하고, 뉴런을 늘린 만큼 정확도가 좋아지는지 비교합니다.</p>
+          <div class="chips"><span>모델 비교</span><span>학습 곡선</span><span>파라미터와 정확도</span></div>
+          <div class="stat" id="cmp-stat"></div>
         </div>
         <span class="go">열기<svg><use href="#i-arrow"/></svg></span>
       </a>
@@ -143,6 +157,29 @@ footer a { color: var(--blue); text-underline-offset: 3px; }
   out += `<rect x="${cx - 5}" y="${cy - 5}" width="10" height="10" transform="rotate(45 ${cx} ${cy})" fill="#2E7D5B" stroke="#fff" stroke-width="1.5"/>`;
   svg.innerHTML = out;
 
+  // 은닉층 크기 비교 미리보기: 모델별 테스트 정확도 막대
+  function drawCompareThumb(C) {
+    const t = document.getElementById('cmp-thumb');
+    const cols = ['#D55E00', '#1D6AAE', '#6E43A6', '#2E7D5B'];
+    const list = C.length ? C.slice().sort((a, b) => a.hidden - b.hidden)
+      : [{ hidden: 32, test: { accuracy: 0.96 } }, { hidden: 128, test: { accuracy: 0.974 } }, { hidden: 512, test: { accuracy: 0.975 } }];
+    const lo = 0.9, hi = 1, bw = 52, gap = 30, x0 = (300 - (list.length * bw + (list.length - 1) * gap)) / 2, base = 146, top = 24;
+    let out = '<rect width="300" height="180" fill="#FFFFFF"/>';
+    [0.9, 0.95, 1].forEach(v => { const y = base - (base - top) * (v - lo) / (hi - lo); out += `<line x1="24" x2="276" y1="${y}" y2="${y}" stroke="#E1E6EB"/>`; });
+    list.forEach((c, i) => {
+      const a = Math.max(lo, c.test.accuracy), h = (base - top) * (a - lo) / (hi - lo), x = x0 + i * (bw + gap);
+      out += `<rect x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="4" fill="${cols[i % cols.length]}"/>`;
+      out += `<text x="${x + bw / 2}" y="${base - h - 6}" text-anchor="middle" font-size="11" font-weight="700" fill="#17212B">${(c.test.accuracy * 100).toFixed(1)}%</text>`;
+      out += `<text x="${x + bw / 2}" y="${base + 18}" text-anchor="middle" font-size="11" font-weight="600" fill="#5A6774">${c.hidden}개</text>`;
+    });
+    t.innerHTML = out;
+    if (C.length > 1) {
+      const s = C.slice().sort((a, b) => b.test.accuracy - a.test.accuracy)[0];
+      document.getElementById('cmp-stat').innerHTML = `가장 정확한 모델: 은닉층 ${s.hidden}개 · <b>${(s.test.accuracy * 100).toFixed(2)}%</b>`;
+    }
+  }
+  drawCompareThumb([]);
+
   // MNIST 미리보기: 학습 결과의 테스트 이미지와 예측
   const cv = document.getElementById('mn-thumb'), ctx = cv.getContext('2d');
   ctx.fillStyle = '#F6F8FA'; ctx.fillRect(0, 0, 300, 180);
@@ -164,6 +201,7 @@ footer a { color: var(--blue); text-underline-offset: 3px; }
       });
       document.getElementById('mn-stat').innerHTML =
         `최근 학습 결과 테스트 정확도 <b>${(R.test.accuracy * 100).toFixed(2)}%</b> · 10,000장 중 ${R.test.correct.toLocaleString('ko-KR')}장`;
+      drawCompareThumb(R.compare || []);
     })
     .catch(() => { ctx.fillStyle = '#5A6774'; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('784 → 128 → 10', 150, 95); });
 })();

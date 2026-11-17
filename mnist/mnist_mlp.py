@@ -16,6 +16,7 @@
     python mnist_mlp.py --compare 32,512  # 은닉층 뉴런 수만 바꾼 모델을 추가로 학습해 비교
 """
 import argparse
+import base64
 import json
 import os
 import sys
@@ -69,6 +70,18 @@ def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_
     wrong = [{"index": int(i), "image": to_img(X_test[i]), "label": int(y_test[i]), "pred": int(pred[i]),
               "conf": round(float(probs[i].max()), 4)} for i in np.where(pred != y_test)[0][:12]]
 
+    # '모델과 대결'에 쓸 테스트 이미지: 모델이 틀린 것 40장과 맞힌 것 40장 (픽셀 784개를 base64로 압축)
+    rng = np.random.default_rng(args.seed)
+    wrong_idx, right_idx = np.where(pred != y_test)[0], np.where(pred == y_test)[0]
+    pick = list(rng.choice(wrong_idx, min(40, len(wrong_idx)), replace=False)) + \
+        list(rng.choice(right_idx, 40, replace=False))
+
+    def b64(v):
+        return base64.b64encode(np.rint(v * 255).astype(np.uint8).tobytes()).decode()
+
+    quiz = [{"img": b64(X_test[i]), "label": int(y_test[i]), "pred": int(pred[i]),
+             "conf": round(float(probs[i].max()), 4)} for i in pick]
+
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID"):
         run_url = (f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
@@ -91,6 +104,7 @@ def export(out_dir, args, model, history, train_seconds, steps, test_loss, test_
         "wrong": wrong,
         "confusion": confusion.tolist(),
         "compare": compare,
+        "quiz": quiz,
     }
     with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, separators=(",", ":"))
