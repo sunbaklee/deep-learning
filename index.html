@@ -121,6 +121,20 @@ footer a { color: var(--blue); text-underline-offset: 3px; }
         <span class="go">열기<svg><use href="#i-arrow"/></svg></span>
       </a>
     </li>
+    <li class="lab">
+      <a href="drowsy/">
+        <div class="thumb" aria-hidden="true">
+          <canvas id="dr-thumb" width="300" height="180"></canvas>
+        </div>
+        <div>
+          <h2>졸음 판별</h2>
+          <p>사진에서 두 눈을 찾아 합성곱 신경망(CNN)으로 감겼는지 판별합니다. 친구 사진을 넣어 정답률을 확인하고, 웹캠으로 실시간 졸음 경고도 볼 수 있습니다.</p>
+          <div class="chips"><span>합성곱 신경망</span><span>친구 사진 시험</span><span>웹캠 실시간 판별</span><span>얼굴 랜드마크</span></div>
+          <div class="stat" id="dr-stat"></div>
+        </div>
+        <span class="go">열기<svg><use href="#i-arrow"/></svg></span>
+      </a>
+    </li>
   </ul>
 </main>
 
@@ -204,6 +218,30 @@ footer a { color: var(--blue); text-underline-offset: 3px; }
       drawCompareThumb(R.compare || []);
     })
     .catch(() => { ctx.fillStyle = '#5A6774'; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('784 → 128 → 10', 150, 95); });
+
+  // 졸음 판별 미리보기: 모델이 맞힌 뜬 눈과 감은 눈
+  const dv = document.getElementById('dr-thumb'), dctx = dv.getContext('2d');
+  dctx.fillStyle = '#F6F8FA'; dctx.fillRect(0, 0, 300, 180);
+  fetch('drowsy/data/results.json').then(r => r.ok ? r.json() : Promise.reject())
+    .then(R => {
+      const N = R.config.size, open = R.right.filter(s => !s.label).slice(0, 4), shut = R.right.filter(s => s.label).slice(0, 4);
+      const S = 58, gap = 10, x0 = (300 - (S * 4 + gap * 3)) / 2;
+      const tile = document.createElement('canvas'); tile.width = tile.height = N;
+      const tctx = tile.getContext('2d');
+      [open, shut].forEach((row, r) => row.forEach((s, i) => {
+        const bytes = atob(s.img), d = tctx.createImageData(N, N);
+        for (let k = 0; k < N * N; k++) { const v = bytes.charCodeAt(k); d.data.set([v, v, v, 255], k * 4); }
+        tctx.putImageData(d, 0, 0);
+        const x = x0 + i * (S + gap), y = 14 + r * (S + 22);
+        dctx.imageSmoothingEnabled = false; dctx.drawImage(tile, x, y, S, S);
+        dctx.font = '600 11px Pretendard Variable, sans-serif'; dctx.textAlign = 'center';
+        dctx.fillStyle = s.label ? '#B3261E' : '#2E7D5B';
+        dctx.fillText(s.label ? '감은 눈' : '뜬 눈', x + S / 2, y + S + 14);
+      }));
+      document.getElementById('dr-stat').innerHTML =
+        `최근 학습 결과 눈 분류 테스트 정확도 <b>${(R.test.accuracy * 100).toFixed(2)}%</b> · ${R.data.test.toLocaleString('ko-KR')}장`;
+    })
+    .catch(() => { dctx.fillStyle = '#5A6774'; dctx.font = '600 13px sans-serif'; dctx.textAlign = 'center'; dctx.fillText('뜬 눈 / 감은 눈', 150, 95); });
 })();
 </script>
 </body>
